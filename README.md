@@ -72,3 +72,6 @@ Also, this mod can be added to an existing save without issues.
 Author: Qlonever
 
 Special thanks to everyone in the OpenMW Discord server who answered my Lua modding questions, especially S3ctor.
+
+## Source
+The source code for this mod can be found here: https://github.com/Qlonever/PCP-OpenMW/
