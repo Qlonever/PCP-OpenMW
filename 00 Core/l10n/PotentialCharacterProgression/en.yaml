@@ -1,0 +1,57 @@
+ModName: 'Potential Character Progression'
+
+PageName: 'Potential Character Progression'
+
+SettingsPlayerName: 'Player Settings'
+
+MenuKeyName: 'Potential Menu Key'
+
+RetroactiveHealthName: 'Retroactive Health Gain'
+RetroactiveHealthDesc: 'If enabled, raising endurance will affect the health gained from previous level-ups as well.'
+
+JailExploitName: 'Allow Jail Time Exploit'
+JailExploitDesc: 'If enabled, skill points lost in jail and then regained later will still contribute to potential and level-up progress.'
+
+AttributeCapName: 'Attributes Maximum Value'
+AttributeCapDesc: 'You cannot raise attributes past this value.'
+
+SettingsBalanceName: 'Balance Settings'
+SettingsBalanceDesc: 'These settings will alter the balance of character progression. Be careful when changing them.'
+
+PotentialPerSkillName: 'Potential Gained Per Misc. Skill Increase'
+
+PotentialPerMinorSkillName: 'Potential Gained Per Minor Skill Increase'
+
+PotentialPerMajorSkillName: 'Potential Gained Per Major Skill Increase'
+
+ExperiencePerLevelName: 'Experience Gained Per Level-Up'
+
+ExperienceCostName: 'Experience Cost To Raise Attribute'
+
+ExperienceCostOverName: 'To Raise Attribute Over Potential'
+
+ExperienceCostFavoredName: 'To Raise Favored Attribute'
+
+ExperienceCostFavoredOverName: 'To Raise Favored Attribute Over Potential'
+
+SettingsDebugName: 'Debug Settings'
+
+DebugModeName: 'Enable Debug Mode'
+DebugModeDesc: 'If enabled, attributes can be raised or lowered freely from the potential menu.'
+
+StartUp: 'Your potential has started to develop. Press {keybind} at any time to check your potential and spend experience.'
+
+VersionOld: '[Potential Character Progression]: You are using an older mod version than the one previously used on this save file. Character progression data will be lost if you continue without updating.'
+VersionNew: '[Potential Character Progression]: You should not see this message. If you somehow do, report it to the mod author.'
+
+UpdateOpenMW: '[Potential Character Progression]: Your OpenMW version is too old for this mod. Use a release newer than 0.48 or the latest development build.'
+
+MenuExperience: 'EXP: '
+
+MenuPotential: 'Potential'
+
+MenuUnused: 'Unused potential and experience can be used later.'
+
+MenuDistribute: 'Auto-Distribute'
+
+MenuCount: 'x'
