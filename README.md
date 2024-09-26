@@ -1,4 +1,5 @@
 # Potential Character Progression
+### Ver. 1.0.0
 Potential Character Progression (PCP) is an OpenMW lua mod that changes Morrowind's level-up mechanics. The first aim of PCP is to eliminate any need to level up optimally, freeing you from having to raise your character's skills in any specific way. The second aim is to avoid sacrificing player input in the level-up process or changing any other mechanics.
 
 ## Potential
