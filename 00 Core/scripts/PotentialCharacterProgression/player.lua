@@ -295,7 +295,7 @@ local function finishCharGen()
     for skillid, skill in pairs(playerSkills) do
         skillData[skillid].peak = skill(self).base
     end
-    totalSkillUpsCurLevel = Player.stats.level(self).progress
+    totalSkillUpsCurLevel = Player.stats.level(self).progress % skillUpsPerLevel
     local keybind = input.getKeyName(playerSettings:get('MenuKey'))
     local charGenCallback = async:registerTimerCallback('charGenMessage', function() ui.showMessage(L('StartUp', {keybind = keybind}), {showInDialogue = false}) end)
     async:newSimulationTimer(0.1, charGenCallback)
