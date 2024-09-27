@@ -42,6 +42,9 @@ local expCostTable
 local ascendText = core.getGMST('sLevelUpMenu1')
 local levelUpTextDefault = core.getGMST('Level_Up_Default')
 local okayText = core.getGMST('sOK')
+local levelText = core.getGMST('sLevel')
+local levelProgressText = core.getGMST('sLevelProgress')
+local skillUpsPerLevel = core.getGMST('iLevelupTotal')
 
 -- Data
 
@@ -59,6 +62,7 @@ local resources = {
     buttonInc = ui.texture{path = 'icons/menu_number_inc.dds', size = v2(10, 18)},
     classArt = ui.texture{path = 'textures/levelup/acrobat.dds', size = v2(256, 128)},
     coin = ui.texture{path = 'icons/tx_goldicon.dds', size = v2(16, 16)},
+    barColor = ui.texture{path = 'textures/menu_bar_gray.dds', size = v2(16, 16)},
     agility = ui.texture{path = 'icons/k/attribute_agility.dds', size = v2(32, 32)},
     endurance = ui.texture{path = 'icons/k/attribute_endurance.dds', size = v2(32, 32)},
     intelligence = ui.texture{path = 'icons/k/attribute_int.dds', size = v2(32, 32)},
@@ -104,114 +108,6 @@ local tooltip
 
 
 -- Pre-defined layouts -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-
--- Layouts containing level-up art and text
-
-local levelUpArt = {
-    name = 'levelUpArt',
-    type = ui.TYPE.Image,
-    props = { resource = resources.classArt, size = v2(256, 128) }
-}
-
-local levelUpLayout = {
-    name = 'padFlex',
-    type = ui.TYPE.Flex,
-    props = {horizontal = true},
-    content = ui.content {
-        {
-            name = 'levelFlex',
-            type = ui.TYPE.Flex,
-            props = {arrange = ui.ALIGNMENT.Center},
-            content = ui.content {
-                {
-                    name = 'artOutline',
-                    type = ui.TYPE.Container,
-                    template = I.MWUI.templates.box,
-                    content = ui.content {
-                        {
-                            name = 'artPadding',
-                            type = ui.TYPE.Container,
-                            template = myui.padding(2,2),
-                            content = ui.content {
-                                levelUpArt
-                            }
-                        }
-                    },
-                    props = {}
-                },
-                myui.padWidget(0,14),
-                {
-                    name = 'ascendText',
-                    type = ui.TYPE.Text,
-                    template = I.MWUI.templates.textNormal,
-                    props = {text = ascendText}
-                },
-                myui.padWidget(0,14),
-                {
-                    name = 'levelUpText',
-                    type = ui.TYPE.Text,
-                    template = I.MWUI.templates.textNormal,
-                    props = {text = levelUpTextDefault, wordWrap = true, autoSize = false, size = v2(272, 128)}
-                }
-            }
-        },
-        myui.padWidget(10,0)
-    }
-}
-
-local rowsFlex = {
-    name = 'rowsFlex',
-    type = ui.TYPE.Flex,
-    props = {horizontal = true},
-}
-local actionsFlex = {
-    name = 'actionsFlex',
-    type = ui.TYPE.Flex,
-    props = {horizontal = true},
-}
-
--- Menu main layout
-local menuLayout = {
-    layer = 'Windows',
-    name = 'menuContainer',
-    type = ui.TYPE.Container,
-    template = I.MWUI.templates.boxTransparentThick,
-    props = {anchor = v2(0.5, 0.5), relativePosition = v2(0.5, 0.5)},
-    content = ui.content {
-        {
-            name = 'padding',
-            type = ui.TYPE.Container,
-            template = myui.padding(8,8),
-            content = ui.content {
-                {
-                    name = 'mainFlex',
-                    type = ui.TYPE.Flex,
-                    props = {horizontal = true},
-                    content = ui.content {
-                        {},
-                        {
-                            name = 'interactiveFlex',
-                            type = ui.TYPE.Flex,
-                            props = {arrange = ui.ALIGNMENT.End},
-                            content = ui.content {
-                                rowsFlex,
-                                myui.padWidget(0,14),
-                                {
-                                    name = 'unusedText',
-                                    type = ui.TYPE.Text,
-                                    template = I.MWUI.templates.textNormal,
-                                    props = {text = L('MenuUnused'), wordWrap = true, autoSize = false, size = v2(212, 32)}
-                                },
-                                myui.padWidget(0,28),
-                                actionsFlex
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 -- Tooltip layouts/functions
 
@@ -295,6 +191,40 @@ local expTooltipFlex = {
     }
 }
 
+local levelTooltipFlex = {
+    name = 'mainFlex',
+    type = ui.TYPE.Flex,
+    props = {arrange = ui.ALIGNMENT.Center},
+    content = ui.content {
+        {
+            name = 'text',
+            type = ui.TYPE.Text,
+            template = I.MWUI.templates.textNormal,
+            props = {text = levelProgressText, textColor = myui.textColors.positive}
+        },
+        myui.padWidget(0, 4),
+        {
+            name = 'progressBar',
+            type = ui.TYPE.Container,
+            template = I.MWUI.templates.box,
+            props = {},
+            content = ui.content {
+                {
+                    name = 'color',
+                    type = ui.TYPE.Image,
+                    props = {resource = resources.barColor, color = myui.textColors.health, size = v2(176, 16)}
+                },
+                {
+                    name = 'progress',
+                    type = ui.TYPE.Text,
+                    template = I.MWUI.templates.textNormal,
+                    props = {text = '0/0', textAlignH = ui.ALIGNMENT.Center, textAlignV = ui.ALIGNMENT.Center, autoSize = false, size = v2(176, 16)}
+                }
+            }
+        }
+    }
+}
+
 local function createAttributeTooltip(attributeid)
     if attributeSettings[attributeid] then
         attributeTooltipFlex.content.headingFlex.content.icon.props.resource = resources[attributeid]
@@ -312,6 +242,14 @@ local function createExpTooltip()
     tooltip.layout.props.visible = true
 end
 
+local function createLevelTooltip()
+    local progress = Player.stats.level(self).progress
+    levelTooltipFlex.content.progressBar.content.progress.props.text = progress .. '/' .. skillUpsPerLevel
+    levelTooltipFlex.content.progressBar.content.color.props.size = v2(176 * math.min(progress / skillUpsPerLevel, 1), 16)
+    tooltip.layout.content.padding.content = ui.content{levelTooltipFlex}
+    tooltip.layout.props.visible = true
+end
+
 local function moveTooltip(mouseEvent, data)
     tooltip.layout.props.position = mouseEvent.position + v2(0, 40)
     tooltip:update()
@@ -322,7 +260,154 @@ local function destroyTooltip()
     tooltip:update()
 end
 
+-- Layouts containing level-up art and text
 
+local levelUpArt = {
+    name = 'levelUpArt',
+    type = ui.TYPE.Image,
+    props = { resource = resources.classArt, size = v2(256, 128) }
+}
+
+local levelUpLayout = {
+    name = 'padFlex',
+    type = ui.TYPE.Flex,
+    props = {horizontal = true},
+    content = ui.content {
+        {
+            name = 'levelFlex',
+            type = ui.TYPE.Flex,
+            props = {arrange = ui.ALIGNMENT.Center},
+            content = ui.content {
+                {
+                    name = 'artOutline',
+                    type = ui.TYPE.Container,
+                    template = I.MWUI.templates.box,
+                    content = ui.content {
+                        {
+                            name = 'artPadding',
+                            type = ui.TYPE.Container,
+                            template = myui.padding(2,2),
+                            content = ui.content {
+                                levelUpArt
+                            }
+                        }
+                    },
+                    props = {}
+                },
+                myui.padWidget(0,14),
+                {
+                    name = 'ascendText',
+                    type = ui.TYPE.Text,
+                    template = I.MWUI.templates.textNormal,
+                    props = {text = ascendText}
+                },
+                myui.padWidget(0,14),
+                {
+                    name = 'levelUpText',
+                    type = ui.TYPE.Text,
+                    template = I.MWUI.templates.textNormal,
+                    props = {text = levelUpTextDefault, wordWrap = true, autoSize = false, size = v2(272, 128)}
+                }
+            }
+        },
+        myui.padWidget(10,0)
+    }
+}
+
+-- Current level indicator
+local levelIndicatorFlex = {
+    name = 'levelIndicatorFlex',
+    type = ui.TYPE.Flex,
+    props = {},
+    events = {
+        focusGain = async:callback(function()
+            createLevelTooltip()
+        end),
+        focusLoss = async:callback(function()
+            destroyTooltip()
+        end),
+        mouseMove = async:callback(function(mouseEvent, data)
+            moveTooltip(mouseEvent, data)
+        end)
+    },
+    content = ui.content {
+        myui.padWidget(68, 0),
+        {
+            name = 'levelIndicatorFlex',
+            type = ui.TYPE.Flex,
+            props = {horizontal = true},
+            content = ui.content {
+                {
+                    name = 'levelIndicatorText',
+                    type = ui.TYPE.Text,
+                    template = I.MWUI.templates.textNormal,
+                    props = {text = levelText .. ' ', textColor = myui.textColors.positive}
+                },
+                {
+                    name = 'levelIndicatorValue',
+                    type = ui.TYPE.Text,
+                    template = I.MWUI.templates.textNormal,
+                    props = {text = tostring(Player.stats.level(self).current)}
+                }
+            }
+        }
+    }
+}
+
+local rowsFlex = {
+    name = 'rowsFlex',
+    type = ui.TYPE.Flex,
+    props = {horizontal = true},
+}
+
+local actionsFlex = {
+    name = 'actionsFlex',
+    type = ui.TYPE.Flex,
+    props = {horizontal = true, arrange = ui.ALIGNMENT.Center}
+}
+
+-- Menu main layout
+local menuLayout = {
+    layer = 'Windows',
+    name = 'menuContainer',
+    type = ui.TYPE.Container,
+    template = I.MWUI.templates.boxTransparentThick,
+    props = {anchor = v2(0.5, 0.5), relativePosition = v2(0.5, 0.5)},
+    content = ui.content {
+        {
+            name = 'padding',
+            type = ui.TYPE.Container,
+            template = myui.padding(8,8),
+            content = ui.content {
+                {
+                    name = 'mainFlex',
+                    type = ui.TYPE.Flex,
+                    props = {horizontal = true},
+                    content = ui.content {
+                        {},
+                        {
+                            name = 'interactiveFlex',
+                            type = ui.TYPE.Flex,
+                            props = {arrange = ui.ALIGNMENT.End},
+                            content = ui.content {
+                                rowsFlex,
+                                myui.padWidget(0,14),
+                                {
+                                    name = 'unusedText',
+                                    type = ui.TYPE.Text,
+                                    template = I.MWUI.templates.textNormal,
+                                    props = {text = L('MenuUnused'), wordWrap = true, autoSize = false, size = v2(212, 32)}
+                                },
+                                myui.padWidget(0,28),
+                                actionsFlex
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 
 
@@ -634,7 +719,7 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
         if attribute.isFavored then
             nameLayout.props.textColor = myui.textColors.positive
         end
-        attributeNames.content:add{name = 'nameflex', type = ui.TYPE.Flex, props = {horizontal = true, arrange = ui.ALIGNMENT.Center}, content = ui.content { myui.padWidget(6,rowHeight), nameLayout, myui.padWidget(6,rowHeight)}}
+        attributeNames.content:add{name = 'nameflex', type = ui.TYPE.Flex, props = {horizontal = true, arrange = ui.ALIGNMENT.Center}, content = ui.content { myui.padWidget(6,rowHeight), nameLayout, myui.padWidget(10,rowHeight)}}
 
         -- Decrement button
         local decLayout = myui.createImageButton(attributeDecs, attributeid, {resource = resources.buttonDec, anchor = v2(0.5, 0.5), size = v2(10, 18)}, modUiAttribute, {attributeid, -1})
@@ -795,6 +880,8 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
 
     -- Show level-up art and text if player has leveled up
     if levelUpData then
+        levelIndicatorFlex.content.levelIndicatorFlex.content.levelIndicatorValue.props.text = tostring(Player.stats.level(self).current)
+        levelIndicatorFlex.props.visible = false
         levelUpLayout.content.levelFlex.content.ascendText.props.text = ascendText .. levelUpData.level
         if levelUpData.level > 1 and levelUpData.level < 21 then
             levelUpLayout.content.levelFlex.content.levelUpText.props.text = core.getGMST('Level_Up_Level' .. levelUpData.level)
@@ -805,11 +892,12 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
         levelUpArt.props.resource = resources.classArt
         menuLayout.content.padding.content.mainFlex.content[1] = levelUpLayout
     else
+        levelIndicatorFlex.props.visible = true
         menuLayout.content.padding.content.mainFlex.content[1] = {}
     end
 
     rowsFlex.content = ui.content {attributeFlex, potentialFlex}
-    actionsFlex.content = ui.content {autoButton, myui.padWidget(4, 0), confirmButton}
+    actionsFlex.content = ui.content {levelIndicatorFlex, myui.padWidget(4, 0), autoButton, myui.padWidget(4, 0), confirmButton}
 
     -- Create the menu
     menu = ui.create(menuLayout)
