@@ -56,6 +56,7 @@ You cannot raise attributes past this value. (Default: 100)
 
 ## Installation
 Add the `00 Core` directory of this mod to OpenMW as a data path. If you'd like to change the setting for level-up requirements, add one of the `01 Modified Level-Up Requirements` directories as a data path as well.
+
 Make sure `PotentialCharacterProgression.omwaddon` and `PotentialCharacterProgression.omwscripts` are enabled as content files. If you're using one of the optional `01` modules, make sure its .omwaddon is enabled after `PotentialCharacterProgression.omwaddon`.
 
 Example:
