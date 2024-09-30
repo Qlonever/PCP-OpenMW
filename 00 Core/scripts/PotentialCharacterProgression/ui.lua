@@ -1,13 +1,14 @@
 -- All code pertaining to this mod's level menu
-local ui = require('openmw.ui')
-local I = require('openmw.interfaces')
-local util = require('openmw.util')
-local storage = require('openmw.storage')
-local core = require('openmw.core')
 local async = require('openmw.async')
-local types = require('openmw.types')
-local Player = types.Player
+local core = require('openmw.core')
+local I = require('openmw.interfaces')
 local self = require('openmw.self')
+local storage = require('openmw.storage')
+local types = require('openmw.types')
+local ui = require('openmw.ui')
+local util = require('openmw.util')
+
+local Player = types.Player
 
 local info = require('scripts.PotentialCharacterProgression.info')
 local myui = require('scripts.' .. info.name .. '.myui')
@@ -201,26 +202,6 @@ local levelTooltipFlex = {
             type = ui.TYPE.Text,
             template = I.MWUI.templates.textNormal,
             props = {text = levelProgressText, textColor = myui.textColors.positive}
-        },
-        myui.padWidget(0, 4),
-        {
-            name = 'progressBar',
-            type = ui.TYPE.Container,
-            template = I.MWUI.templates.box,
-            props = {},
-            content = ui.content {
-                {
-                    name = 'color',
-                    type = ui.TYPE.Image,
-                    props = {resource = resources.barColor, color = myui.textColors.health, size = v2(176, 16)}
-                },
-                {
-                    name = 'progress',
-                    type = ui.TYPE.Text,
-                    template = I.MWUI.templates.textNormal,
-                    props = {text = '0/0', textAlignH = ui.ALIGNMENT.Center, textAlignV = ui.ALIGNMENT.Center, autoSize = false, size = v2(176, 16)}
-                }
-            }
         }
     }
 }
@@ -243,9 +224,6 @@ local function createExpTooltip()
 end
 
 local function createLevelTooltip()
-    local progress = Player.stats.level(self).progress
-    levelTooltipFlex.content.progressBar.content.progress.props.text = progress .. '/' .. skillUpsPerLevel
-    levelTooltipFlex.content.progressBar.content.color.props.size = v2(176 * math.min(progress / skillUpsPerLevel, 1), 16)
     tooltip.layout.content.padding.content = ui.content{levelTooltipFlex}
     tooltip.layout.props.visible = true
 end
@@ -314,40 +292,60 @@ local levelUpLayout = {
     }
 }
 
--- Current level indicator
-local levelIndicatorFlex = {
-    name = 'levelIndicatorFlex',
+-- Current level info
+local levelInfoFlex = {
+    name = 'levelInfoFlex',
     type = ui.TYPE.Flex,
-    props = {},
-    events = {
-        focusGain = async:callback(function()
-            createLevelTooltip()
-        end),
-        focusLoss = async:callback(function()
-            destroyTooltip()
-        end),
-        mouseMove = async:callback(function(mouseEvent, data)
-            moveTooltip(mouseEvent, data)
-        end)
-    },
+    props = {horizontal = true, arrange = ui.ALIGNMENT.Center},
     content = ui.content {
-        myui.padWidget(68, 0),
         {
-            name = 'levelIndicatorFlex',
+            name = 'textFlex',
             type = ui.TYPE.Flex,
-            props = {horizontal = true},
+            props = {horizontal = true, size = v2(70, 16), autoSize = false},
             content = ui.content {
                 {
-                    name = 'levelIndicatorText',
+                    name = 'text',
                     type = ui.TYPE.Text,
                     template = I.MWUI.templates.textNormal,
-                    props = {text = levelText .. ' ', textColor = myui.textColors.positive}
+                    props = {text = levelText, textColor = myui.textColors.positive}
                 },
+                myui.padWidget(8,0),
                 {
-                    name = 'levelIndicatorValue',
+                    name = 'value',
                     type = ui.TYPE.Text,
                     template = I.MWUI.templates.textNormal,
                     props = {text = tostring(Player.stats.level(self).current)}
+                }
+            }
+        },
+        myui.padWidget(8,0),
+        {
+            name = 'progressBar',
+            type = ui.TYPE.Container,
+            template = I.MWUI.templates.box,
+            props = {},
+            events = {
+                focusGain = async:callback(function()
+                    createLevelTooltip()
+                end),
+                focusLoss = async:callback(function()
+                    destroyTooltip()
+                end),
+                mouseMove = async:callback(function(mouseEvent, data)
+                    moveTooltip(mouseEvent, data)
+                end)
+            },
+            content = ui.content {
+                {
+                    name = 'color',
+                    type = ui.TYPE.Image,
+                    props = {resource = resources.barColor, color = myui.textColors.health, size = v2(130, 16)}
+                },
+                {
+                    name = 'progress',
+                    type = ui.TYPE.Text,
+                    template = I.MWUI.templates.textNormal,
+                    props = {text = '0/0', textAlignH = ui.ALIGNMENT.Center, textAlignV = ui.ALIGNMENT.Center, autoSize = false, size = v2(130, 16), position = v2(0, -2)}
                 }
             }
         }
@@ -391,14 +389,16 @@ local menuLayout = {
                             props = {arrange = ui.ALIGNMENT.End},
                             content = ui.content {
                                 rowsFlex,
-                                myui.padWidget(0,14),
+                                myui.padWidget(0,15),
+                                {},
+                                myui.padWidget(0,15),
                                 {
                                     name = 'unusedText',
                                     type = ui.TYPE.Text,
                                     template = I.MWUI.templates.textNormal,
                                     props = {text = L('MenuUnused'), wordWrap = true, autoSize = false, size = v2(212, 32)}
                                 },
-                                myui.padWidget(0,28),
+                                myui.padWidget(0,12),
                                 actionsFlex
                             }
                         }
@@ -878,10 +878,14 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
     autoButton:update()
     confirmButton:update()
 
+    local progress = Player.stats.level(self).progress
+    levelInfoFlex.content.progressBar.content.progress.props.text = progress .. '/' .. skillUpsPerLevel
+    levelInfoFlex.content.progressBar.content.color.props.size = v2(130 * math.min(progress / skillUpsPerLevel, 1), 16)
+    levelInfoFlex.content.textFlex.content.value.props.text = tostring(Player.stats.level(self).current)
+
     -- Show level-up art and text if player has leveled up
     if levelUpData then
-        levelIndicatorFlex.content.levelIndicatorFlex.content.levelIndicatorValue.props.text = tostring(Player.stats.level(self).current)
-        levelIndicatorFlex.props.visible = false
+        menuLayout.content.padding.content.mainFlex.content.interactiveFlex.content[3] = {}
         levelUpLayout.content.levelFlex.content.ascendText.props.text = ascendText .. levelUpData.level
         if levelUpData.level > 1 and levelUpData.level < 21 then
             levelUpLayout.content.levelFlex.content.levelUpText.props.text = core.getGMST('Level_Up_Level' .. levelUpData.level)
@@ -892,12 +896,12 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
         levelUpArt.props.resource = resources.classArt
         menuLayout.content.padding.content.mainFlex.content[1] = levelUpLayout
     else
-        levelIndicatorFlex.props.visible = true
+        menuLayout.content.padding.content.mainFlex.content.interactiveFlex.content[3] = levelInfoFlex
         menuLayout.content.padding.content.mainFlex.content[1] = {}
     end
 
     rowsFlex.content = ui.content {attributeFlex, potentialFlex}
-    actionsFlex.content = ui.content {levelIndicatorFlex, myui.padWidget(4, 0), autoButton, myui.padWidget(4, 0), confirmButton}
+    actionsFlex.content = ui.content {autoButton, myui.padWidget(4, 0), confirmButton}
 
     -- Create the menu
     menu = ui.create(menuLayout)
