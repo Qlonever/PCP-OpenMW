@@ -1,9 +1,8 @@
-local I = require('openmw.interfaces')
-local ui = require('openmw.ui')
-local input = require('openmw.input')
-local async = require('openmw.async')
-local util = require('openmw.util')
+local async = require('openmw.async')local I = require('openmw.interfaces')
 local core = require('openmw.core')
+local input = require('openmw.input')
+local ui = require('openmw.ui')
+local util = require('openmw.util')
 
 local info = require('scripts.PotentialCharacterProgression.info')
 

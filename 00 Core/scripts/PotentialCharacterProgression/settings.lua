@@ -1,8 +1,8 @@
 -- Settings
-local storage = require('openmw.storage')
+local async = require('openmw.async')
 local I = require('openmw.interfaces')
 local input = require('openmw.input')
-local async = require('openmw.async')
+local storage = require('openmw.storage')
 
 local info = require('scripts.PotentialCharacterProgression.info')
 
@@ -146,6 +146,13 @@ I.Settings.registerGroup {
             renderer = 'checkbox',
             name = 'RetroactiveHealthName',
             description = 'RetroactiveHealthDesc',
+            default = false
+        },
+        {
+            key = 'RetroactiveStartHealth',
+            renderer = 'checkbox',
+            name = 'RetroactiveStartHealthName',
+            description = 'RetroactiveStartHealthDesc',
             default = false
         },
         {

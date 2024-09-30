@@ -28,6 +28,8 @@ By default, PCP is balanced so that 20 skill increases will allow you to raise y
 This key opens up the potential menu, where you can check and use your potential and experience. This is the same menu that you see upon leveling up. (Default: L)
 ### Retroactive Health Gain
 If enabled, raising endurance will affect the health gained from previous level-ups as well. (Default: OFF)
+### Retroactive Starting Health
+If this and "Retroactive Health Gain" are enabled, raising endurance or strength will affect the initial health from character creation. (Default: OFF)
 ### Allow Jail Time Exploit
 If enabled, skill points lost in jail and then regained later will still contribute to potential and level-up progress. (Default: OFF)
 ### Attributes Maximum Value

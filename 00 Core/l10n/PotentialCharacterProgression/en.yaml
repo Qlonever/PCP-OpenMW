@@ -9,6 +9,9 @@ MenuKeyName: 'Potential Menu Key'
 RetroactiveHealthName: 'Retroactive Health Gain'
 RetroactiveHealthDesc: 'If enabled, raising endurance will affect the health gained from previous level-ups as well.'
 
+RetroactiveStartHealthName: 'Retroactive Starting Health'
+RetroactiveStartHealthDesc: 'If this and "Retroactive Health Gain" are enabled, raising endurance or strength will affect the initial health from character creation.'
+
 JailExploitName: 'Allow Jail Time Exploit'
 JailExploitDesc: 'If enabled, skill points lost in jail and then regained later will still contribute to potential and level-up progress.'
 

@@ -1,15 +1,5 @@
 -- The main logic and functions of this mod
-local types = require('openmw.types')
-local self = require('openmw.self')
 local core = require('openmw.core')
-local storage = require('openmw.storage')
-local I = require('openmw.interfaces')
-local ui = require('openmw.ui')
-local util = require('openmw.util')
-local ambient = require('openmw.ambient')
-local input = require('openmw.input')
-local async = require('openmw.async')
-local Player = types.Player
 
 local info = require('scripts.PotentialCharacterProgression.info')
 local L = core.l10n(info.name)
@@ -19,9 +9,21 @@ if core.API_REVISION < info.minApiVersion then
     return
 end
 
+local ambient = require('openmw.ambient')
+local async = require('openmw.async')
+local I = require('openmw.interfaces')
+local input = require('openmw.input')
+local self = require('openmw.self')
+local storage = require('openmw.storage')
+local types = require('openmw.types')
+local ui = require('openmw.ui')
+local util = require('openmw.util')
+
+local Player = types.Player
+
+local classData = require('scripts.' .. info.name .. '.classdata')
 local PLui = require('scripts.' .. info.name .. '.ui')
 local settings = require('scripts.' .. info.name .. '.settings')
-local classData = require('scripts.' .. info.name .. '.classdata')
 
 local function contains(t, element)
   for _, value in pairs(t) do
@@ -46,6 +48,8 @@ local skillUpsPerLevel = core.getGMST('iLevelupTotal')
 -- Data
 
 local playerClassRecord = Player.classes.record(Player.record(self).class)
+local playerRaceRecord = Player.races.record(Player.record(self).race)
+local playerSex
 local playerStats = Player.stats
 local playerAttributes = playerStats.attributes
 local playerSkills = playerStats.skills
@@ -202,10 +206,27 @@ end
 
 local function hideMenu()
     PLui.hideMenu()
+    -- If leveled up, remove all health granted by this mod, then recalculate with base attributes
+    -- Other sources of strength/endurance and health should be integrated correctly
+    -- Do this in the hide function so it still triggers even if the player just closes the menu
     if levelUpData then
-        local healthIncrease = Player.stats.attributes.endurance(self).base * 0.1
+        local currentEndurance = Player.stats.attributes.endurance(self).base
+        local healthIncrease = currentEndurance * 0.1
         if playerSettings:get('RetroactiveHealth') then
             healthIncrease = healthIncrease * levelUps - totalHealthGained
+            if playerSettings:get('RetroactiveStartHealth') then
+                local currentStrength = Player.stats.attributes.strength(self).base
+                local initAttributes = {
+                    strength = playerRaceRecord.attributes.strength[playerSex],
+                    endurance = playerRaceRecord.attributes.endurance[playerSex]
+                }
+                for _, attributeid in pairs(playerClassRecord.attributes) do
+                    if attributeid == 'strength' or attributeid == 'endurance' then
+                        initAttributes[attributeid] = initAttributes[attributeid] + 10
+                    end
+                end
+                healthIncrease = healthIncrease + (currentStrength + currentEndurance - initAttributes.strength - initAttributes.endurance) * 0.5
+            end
         else
             healthIncrease = healthIncrease * levelUpData.ups
         end
@@ -235,6 +256,9 @@ local function finishMenu(data)
         local healthIncrease = data.uiAttributes.endurance.ups * 0.1
         if playerSettings:get('RetroactiveHealth') then
             healthIncrease = healthIncrease * levelUps
+            if playerSettings:get('RetroactiveStartHealth') then
+                healthIncrease = healthIncrease + (data.uiAttributes.endurance.ups + data.uiAttributes.strength.ups) * 0.5
+            end
         end
         totalHealthGained = totalHealthGained + healthIncrease
         Player.stats.dynamic.health(self).base = Player.stats.dynamic.health(self).base + healthIncrease
@@ -295,6 +319,7 @@ local function finishCharGen()
     for skillid, skill in pairs(playerSkills) do
         skillData[skillid].peak = skill(self).base
     end
+    playerSex = (Player.record(self).isMale and 'male') or 'female'
     totalSkillUpsCurLevel = Player.stats.level(self).progress % skillUpsPerLevel
     local keybind = input.getKeyName(playerSettings:get('MenuKey'))
     local charGenCallback = async:registerTimerCallback('charGenMessage', function() ui.showMessage(L('StartUp', {keybind = keybind}), {showInDialogue = false}) end)
@@ -349,6 +374,7 @@ local function onLoad(data)
         totalHealthGained = data.totalHealthGained
         totalSkillUpsCurLevel = data.totalSkillUpsCurLevel
     end
+        playerSex = (Player.record(self).isMale and 'male') or 'female'
         isCharGenFinished = true
 end
 
