@@ -44,6 +44,7 @@ local balanceSettings = storage.playerSection('SettingsPlayer' .. info.name .. '
 -- Game settings
 
 local skillUpsPerLevel = core.getGMST('iLevelupTotal')
+local levelHealthMult = core.getGMST('fLevelUpHealthEndMult')
 
 -- Data
 
@@ -207,11 +208,11 @@ end
 local function hideMenu()
     PLui.hideMenu()
     -- If leveled up, remove all health granted by this mod, then recalculate with base attributes
-    -- Other sources of strength/endurance and health should be integrated correctly
+    -- Other sources of endurance/strength and health should be integrated correctly
     -- Do this in the hide function so it still triggers even if the player just closes the menu
     if levelUpData then
         local currentEndurance = Player.stats.attributes.endurance(self).base
-        local healthIncrease = currentEndurance * 0.1
+        local healthIncrease = currentEndurance * levelHealthMult
         if playerSettings:get('RetroactiveHealth') then
             healthIncrease = healthIncrease * levelUps - totalHealthGained
             if playerSettings:get('RetroactiveStartHealth') then
@@ -250,10 +251,10 @@ local function finishMenu(data)
     end
     
     -- If the menu wasn't triggered by a level-up, increase health based on endurance increases
-    -- This effectively only changes the health gain from the most recent level-up
+    -- Other sources of endurance/strength won't be integrated until the next level-up
     -- Do this in the finish menu event so we don't have to pass individual increase data to the hide function
     if not isLevelUp then
-        local healthIncrease = data.uiAttributes.endurance.ups * 0.1
+        local healthIncrease = data.uiAttributes.endurance.ups * levelHealthMult
         if playerSettings:get('RetroactiveHealth') then
             healthIncrease = healthIncrease * levelUps
             if playerSettings:get('RetroactiveStartHealth') then

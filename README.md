@@ -1,5 +1,5 @@
 # Potential Character Progression
-### Ver. 1.0.0
+### Ver. 1.0.1
 Potential Character Progression (PCP) is an OpenMW lua mod that changes Morrowind's level-up mechanics. The first aim of PCP is to eliminate any need to level up optimally, freeing you from having to raise your character's skills in any specific way. The second aim is to avoid sacrificing player input in the level-up process or changing any other mechanics.
 
 ## Potential
@@ -18,7 +18,7 @@ Potential and experience won't go away until they're used. Once you level up, yo
 Character creation is left completely untouched. However, the changes in this mod might inform your class creation. Major/minor skills no longer represent what your character must do in order to level up, but rather what they're already good at and can progress in more easily. Feel free to pick all or none of the skills for one attribute, since it won't make your level-ups more difficult or less rewarding. If you want to prioritize an attribute but don't plan on using its skills very much, choosing it as a favored attribute will allow you to raise it much faster.
 
 ## Balance
-By default, PCP is balanced so that 20 skill increases will allow you to raise your attributes by about 11 points total, not accounting for the benefits of favored attributes. This is equivalent to a somewhat efficient level-up in Morrowind's regular mechanics, which would allow you to raise two attributes by five points and another by one point. (like Luck, which can't get multipliers normally) Leveling up may take longer due to the increased requirement of 20, but since miscellaneous skills can contribute to this as well, the difference will depend on your playstyle. With PCP, you're no longer under any pressure to watch what skills you increase, so feel free to buy whatever miscellaneous training services you come across. However, this mod is also highly configurable, so you can make your attributes increase more slowly or quickly if you want. (See the Balance Settings section below)
+By default, PCP is balanced so that 20 skill increases will allow you to raise your attributes by about 11 points total, not accounting for the benefits of favored attributes. This is equivalent to a somewhat efficient level-up in Morrowind's regular mechanics, which would allow you to raise two attributes by five points and another by one point. (like Luck, which can't get multipliers normally) Leveling up may take longer due to the increased requirement of 20, but since miscellaneous skills can contribute to this as well, the difference will depend on your playstyle. With PCP, you're no longer under any pressure to watch what skills you increase, so feel free to buy whatever miscellaneous training services you come across. However, this mod is also highly configurable, so you can make your attributes increase more slowly or quickly if you want. (See the "Balance Settings" section below)
 
 ## Settings
 <Details>
@@ -56,6 +56,8 @@ You cannot raise attributes past this value. (Default: 100)
 (Default: 2)
 </Details>
 
+PCP includes optional modules that change how many skill increases are required to level up. The default is 20, but you can also choose between 10, 15, 25, and 30. See the "Installation" section below.
+
 ## Installation
 Add the `00 Core` directory of this mod to OpenMW as a data path. If you'd like to change the setting for level-up requirements, add one of the `01 Modified Level-Up Requirements` directories as a data path as well.
 
@@ -78,8 +80,8 @@ content=PotentialCharacterProgression.omwscripts
 ### Requirements
 PCP requires a development build of OpenMW newer than August 2024, or any release newer than 0.48.
 ### Compatibility
-Any mod that changes the level-up/attribute increasing process probably won't work with PCP, but plugins that increase/decrease attributes via the occasional dialogue or scripted object aren't a problem. Mods affecting skill progression should work too.
-Also, this mod can be added to an existing save without issues.
+Anything that changes the level-up process likely won't work with PCP, but mods that occasionally increase/decrease attributes outside of level-ups are fine. Mods changing character creation or skill progression should work too.
+Also, PCP can be added to an existing save without issues.
 
 ## Credits
 Author: Qlonever
