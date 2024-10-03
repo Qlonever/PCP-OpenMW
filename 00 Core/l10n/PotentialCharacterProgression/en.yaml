@@ -1,60 +1,65 @@
-ModName: 'Potential Character Progression'
+ModName: "Potential Character Progression"
 
-PageName: 'Potential Character Progression'
+PageName: "Potential Character Progression"
 
-SettingsPlayerName: 'Player Settings'
+SettingsPlayerName: "Player Settings"
 
-MenuKeyName: 'Potential Menu Key'
+MenuKeyName: "Potential Menu Key"
 
-RetroactiveHealthName: 'Retroactive Health Gain'
-RetroactiveHealthDesc: 'If enabled, raising endurance will affect the health gained from previous level-ups as well.'
+RetroactiveHealthName: "Retroactive Health Gain"
+RetroactiveHealthDesc: "If enabled, raising endurance will affect the health gained from previous level-ups as well."
 
-RetroactiveStartHealthName: 'Retroactive Starting Health'
-RetroactiveStartHealthDesc: 'If this and "Retroactive Health Gain" are enabled, raising endurance or strength will affect the initial health from character creation.'
+RetroactiveStartHealthName: "Retroactive Starting Health"
+RetroactiveStartHealthDesc: "If this and 'Retroactive Health Gain' are enabled, raising endurance or strength will affect the initial health from character creation."
 
-JailExploitName: 'Allow Jail Time Exploit'
-JailExploitDesc: 'If enabled, skill points lost in jail and then regained later will still contribute to potential and level-up progress.'
+JailExploitName: "Allow Jail Time Exploit"
+JailExploitDesc: "If enabled, skill points lost in jail and then regained later will still contribute to potential and level-up progress."
 
-AttributeCapName: 'Attributes Maximum Value'
-AttributeCapDesc: 'You cannot raise attributes past this value.'
+AttributeCapName: "Attributes Maximum Value"
+AttributeCapDesc: "You cannot raise attributes past this value."
 
-SettingsBalanceName: 'Balance Settings'
-SettingsBalanceDesc: 'These settings will alter the balance of character progression. Be careful when changing them.'
+SettingsBalanceName: "Balance Settings"
+SettingsBalanceDesc: "These settings will alter the balance of character progression. Be careful when changing them."
 
-PotentialPerSkillName: 'Potential Gained Per Misc. Skill Increase'
+PotentialPerSkillName: "Potential Gained Per Misc. Skill Increase"
 
-PotentialPerMinorSkillName: 'Potential Gained Per Minor Skill Increase'
+PotentialPerMinorSkillName: "Potential Gained Per Minor Skill Increase"
 
-PotentialPerMajorSkillName: 'Potential Gained Per Major Skill Increase'
+PotentialPerMajorSkillName: "Potential Gained Per Major Skill Increase"
 
-ExperiencePerLevelName: 'Experience Gained Per Level-Up'
+ExperiencePerLevelName: "Experience Gained Per Level-Up"
 
-ExperienceCostName: 'Experience Cost To Raise Attribute'
+ExperienceCostName: "Experience Cost To Raise Attribute"
 
-ExperienceCostOverName: 'To Raise Attribute Over Potential'
+ExperienceCostOverName: "To Raise Attribute Over Potential"
 
-ExperienceCostFavoredName: 'To Raise Favored Attribute'
+ExperienceCostFavoredName: "To Raise Favored Attribute"
 
-ExperienceCostFavoredOverName: 'To Raise Favored Attribute Over Potential'
+ExperienceCostFavoredOverName: "To Raise Favored Attribute Over Potential"
 
-SettingsDebugName: 'Debug Settings'
+SettingsDebugName: "Debug Settings"
 
-DebugModeName: 'Enable Debug Mode'
-DebugModeDesc: 'If enabled, attributes can be raised or lowered freely from the potential menu.'
+DebugModeName: "Enable Debug Mode"
+DebugModeDesc: "If enabled, attributes can be raised or lowered freely from the potential menu."
 
-StartUp: 'Your potential has started to develop. Press {keybind} at any time to check your potential and spend experience.'
+StartUp: "Your potential has started to develop. Press {keybind} at any time to check your potential and spend experience."
 
-VersionOld: '[Potential Character Progression]: You are using an older mod version than the one previously used on this save file. Character progression data will be lost if you continue without updating.'
-VersionNew: '[Potential Character Progression]: You should not see this message. If you somehow do, report it to the mod author.'
+VersionOld: "[Potential Character Progression]: You are using an older mod version than the one previously used on this save file. Settings and character progression data may be lost if you continue without updating."
 
-UpdateOpenMW: '[Potential Character Progression]: Your OpenMW version is too old for this mod. Use a release newer than 0.48 or the latest development build.'
+SaveVersionNew: "[Potential Character Progression]: You should not see this message. If you somehow do, report it to the mod author."
+SaveVersionOld: "[Potential Character Progression]: You are using an older mod version than the one previously used on this save file. Character progression data may be lost if you continue without updating."
 
-MenuExperience: 'EXP: '
+SettingsVersionNew: "[Potential Character Progression]: Some settings have changed since the last version. Check this mod's settings in Options > Scripts to ensure everything is configured to your liking."
+SettingsVersionOld: "[Potential Character Progression]: You are using an older mod version than the one previously used on this save file. Your settings may be lost if you continue without updating."
 
-MenuPotential: 'Potential'
+UpdateOpenMW: "[Potential Character Progression]: Your OpenMW version is too old for this mod. Use a release newer than 0.48 or the latest development build."
 
-MenuUnused: 'Unused potential and experience can be used later.'
+MenuExperience: "EXP: "
 
-MenuDistribute: 'Auto-Distribute'
+MenuPotential: "Potential"
 
-MenuCount: 'x'
+MenuUnused: "Unused potential and experience can be used later."
+
+MenuDistribute: "Auto-Distribute"
+
+MenuCount: "x"
