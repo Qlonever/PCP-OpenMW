@@ -739,7 +739,10 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
         }
         attributeNums.layout.content:add{name = attributeid, type = ui.TYPE.Flex, props = {horizontal = true, arrange = ui.ALIGNMENT.Center}, content = ui.content {myui.padWidget(4, rowHeight), numLayout, myui.padWidget(4, rowHeight)}}
 
-        local potInt = tostring(math.floor(attribute.potential) + attribute.base)
+        local potString = tostring(attribute.potential + attribute.base)
+
+        -- Potential whole number, split to align at decimal point
+        local potInt = potString:sub(potString:find('^%d+'))
         attributePotsInt.content:add(sizeRow{
             name = attributeid,
             type = ui.TYPE.Text,
@@ -748,7 +751,7 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
         })
 
         -- Potential decimal, split to align at decimal point
-        local potFrac = tostring(attribute.potential - math.floor(attribute.potential)):gsub('0', '', 1)
+        local potFrac = potString:gsub('^%d+', '')
         attributePotsFrac.content:add(sizeRow{
             name = attributeid,
             type = ui.TYPE.Text,
