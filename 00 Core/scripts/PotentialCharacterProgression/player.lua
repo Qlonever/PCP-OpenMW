@@ -249,7 +249,7 @@ local function hideMenu()
     -- Other sources of endurance/strength and health should be integrated correctly
     -- Do this in the hide function so it still triggers even if the player just closes the menu
     if levelUpData then
-        local currentEndurance = Player.stats.attributes.endurance(self).base
+        local currentEndurance = playerAttributes.endurance(self).base
         local healthIncrease = currentEndurance * levelHealthMult
         if playerSettings:get('RetroactiveHealth') then
             healthIncrease = healthIncrease * levelUps - totalHealthGained
@@ -273,7 +273,7 @@ local function finishMenu(data)
             attributeData[attributeid].potential = math.max(math.floor(uiAttribute.potential) - uiAttribute.ups, 0) + uiAttribute.potential - math.floor(uiAttribute.potential)
         end
         attributeData[attributeid].ups = attributeData[attributeid].ups + uiAttribute.ups
-        Player.stats.attributes[attributeid](self).base = Player.stats.attributes[attributeid](self).base + uiAttribute.ups
+        playerAttributes[attributeid](self).base = playerAttributes[attributeid](self).base + uiAttribute.ups
     end
     
     -- If the menu wasn't triggered by a level-up, increase health based on endurance increases
