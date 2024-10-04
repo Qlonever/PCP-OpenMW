@@ -53,10 +53,11 @@ local playerAttributes = playerStats.attributes
 local playerSkills = playerStats.skills
 
 local function getPlayerRecords()
+    local playerRecord = Player.record(self)
     return {
-        class = Player.classes.record(Player.record(self).class),
-        race = Player.races.record(Player.record(self).race),
-        sex = (Player.record(self).isMale and 'male') or 'female'
+        class = Player.classes.record(playerRecord.class),
+        race = Player.races.record(playerRecord.race),
+        sex = (playerRecord.isMale and 'male') or 'female'
     }
 end
 
