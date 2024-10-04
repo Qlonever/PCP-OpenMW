@@ -56,7 +56,7 @@ You cannot raise attributes past this value. (Default: 100)
 (Default: 2)
 </Details>
 
-PCP includes optional modules that change how many skill increases are required to level up. The default is 20, but you can also choose between 10, 15, 25, and 30. See the "Installation" section below.
+PCP includes optional modules that change how many skill increases are required to level up. The default is 20, but you can also choose between 10, 15, 25, 30, 40, or 50. See the "Installation" section below.
 
 ## Installation
 Add the `00 Core` directory of this mod to OpenMW as a data path. If you'd like to change the setting for level-up requirements, add one of the `01 Modified Level-Up Requirements` directories as a data path as well.
@@ -78,10 +78,12 @@ content=PotentialCharacterProgression_ModifiedLevelUps_15.omwaddon
 content=PotentialCharacterProgression.omwscripts
 ```
 ### Requirements
-PCP requires a development build of OpenMW newer than August 2024, or any release newer than 0.48.
+PCP requires a development build of OpenMW newer than August 2024, or any release newer than 0.48. If your version is too old, a warning will appear in the log. (Press F10 or check openmw.log)
 ### Compatibility
 Anything that changes the level-up process likely won't work with PCP, but mods that occasionally increase/decrease attributes outside of level-ups are fine. Mods changing character creation or skill progression should work too.
 Also, PCP can be added to an existing save without issues.
+### Updating
+Updating this mod on an existing save shouldn't pose any problems. If there is an issue, though, you will be informed via a pop-up message when you load the save.
 
 ## Credits
 Author: Qlonever
@@ -89,4 +91,4 @@ Author: Qlonever
 Special thanks to everyone in the OpenMW Discord server who answered my Lua modding questions, especially S3ctor.
 
 ## Source
-The source code for this mod can be found here: https://github.com/Qlonever/PCP-OpenMW/
+This mod can be found on Github: https://github.com/Qlonever/PCP-OpenMW Updates there will be smaller and more frequent.
