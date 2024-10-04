@@ -336,6 +336,7 @@ local function handleskillUps(skillid, source, options)
         skillData[skillid].upsLastLevels = skillData[skillid].upsLastLevels - totalSkillUpsCurLevel
         skillData[skillid].upsCurLevel = totalSkillUpsCurLevel
     end
+    return true
 end
 
 I.SkillProgression.addSkillLevelUpHandler(handleskillUps)
