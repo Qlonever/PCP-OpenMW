@@ -49,7 +49,7 @@ local skillUpsPerLevel = core.getGMST('iLevelupTotal')
 
 -- Data
 
-local playerClassRecord = Player.classes.record(Player.record(self).class)
+local playerClassRecord
 
 -- Menu constants
 
@@ -637,7 +637,13 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
     
     uiDistributed = false
 
+    -- Can't read this when the script first loads if the player doesn't have a class yet
+    if not playerClassRecord then
+        playerClassRecord = Player.classes.record(Player.record(self).class)
+    end
+
     -- Set these at menu creation so settings can update mid-session
+
     attributeCap = playerSettings:get('AttributeCap')
     
     debugMode = debugSettings:get('DebugMode')
