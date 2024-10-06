@@ -15,6 +15,17 @@ local myui = require('scripts.' .. info.name .. '.myui')
 
 local v2 = util.vector2
 
+local gameSettings = {
+    strengthName = core.getGMST('sAttributeStrength'),
+    intelligenceName = core.getGMST('sAttributeIntelligence'),
+    willpowerName = core.getGMST('sAttributeWillpower'),
+    agilityName = core.getGMST('sAttributeAgility'),
+    speedName = core.getGMST('sAttributeSpeed'),
+    enduranceName = core.getGMST('sAttributeEndurance'),
+    personalityName = core.getGMST('sAttributePersonality'),
+    luckName = core.getGMST('sAttributeLuck')
+}
+
 local function disable(disabled, layout)
     if disabled then
         return {
@@ -124,7 +135,90 @@ local function validateNumber(text, argument)
     return number
 end
 
-local function createNumberField(value, set, argument, attribute, first)
+local function createAttributeField(value, set, argument, attribute, valueCopy, size)
+    return {
+        type = ui.TYPE.Container,
+        template = I.MWUI.templates.box,
+        content = ui.content {
+            {
+                type = ui.TYPE.Container,
+                template = myui.padding(2, 2),
+                content = ui.content {
+                    {
+                        template = I.MWUI.templates.textEditLine,
+                        props = {
+                            text = tostring(value[attribute]),
+                            size = size,
+                        },
+                        events = {
+                            textChanged = async:callback(function(text)
+                                lastInput = text
+                            end),
+                            focusLoss = async:callback(function()
+                                if not lastInput then return end
+                                local number = validateNumber(lastInput, argument)
+                                if not number then
+                                    set(valueCopy)
+                                end
+                                if number and number ~= value then
+                                    valueCopy[attribute] = number
+                                    set(valueCopy)
+                                end
+                            end),
+                        }
+                    }
+                }
+            }
+        }
+    }
+end
+
+-- Renderer for unique attribute caps
+local function createUniqueCapField(value, set, argument, attribute)
+    local lastInput = nil
+    local caps = {}
+    for k, v in pairs(value) do
+        caps[k] = v
+    end
+    return {
+        type = ui.TYPE.Flex,
+        props = {horizontal = true, arrange = ui.ALIGNMENT.Center},
+        content = ui.content {
+            {
+                type = ui.TYPE.Text,
+                template = I.MWUI.templates.textNormal,
+                props = {text = gameSettings[attribute .. 'Name'] .. ' '}
+            },
+            createAttributeField(value, set, argument, attribute, caps, v2(60, 0))
+        }
+    }
+end
+
+I.Settings.registerRenderer(info.name .. 'UniqueCaps', function(value, set, argument)
+    local rendererLayout
+    if argument.disabled then
+        rendererLayout = {}
+    else
+        rendererLayout = {
+            type = ui.TYPE.Flex,
+            props = {arrange = ui.ALIGNMENT.End},
+            content = ui.content {
+                createUniqueCapField(value, set, argument, 'strength'),
+                createUniqueCapField(value, set, argument, 'intelligence'),
+                createUniqueCapField(value, set, argument, 'willpower'),
+                createUniqueCapField(value, set, argument, 'agility'),
+                createUniqueCapField(value, set, argument, 'speed'),
+                createUniqueCapField(value, set, argument, 'endurance'),
+                createUniqueCapField(value, set, argument, 'personality'),
+                createUniqueCapField(value, set, argument, 'luck')
+            }
+        }
+    end
+    return rendererLayout
+end)
+
+-- Renderer for custom health coefficients
+local function createCoefficientField(value, set, argument, attribute, first)
     local lastInput = nil
     local coeffs = {}
     for k, v in pairs(value) do
@@ -153,59 +247,25 @@ local function createNumberField(value, set, argument, attribute, first)
                 template = I.MWUI.templates.textNormal,
                 props = {text = ' x ', autoSize = false, size = v2(19, 18), textAlignV = ui.ALIGNMENT.Start}
             },
-            {
-                type = ui.TYPE.Container,
-                template = I.MWUI.templates.box,
-                content = ui.content {
-                    {
-                        type = ui.TYPE.Container,
-                        template = myui.padding(2, 2),
-                        content = ui.content {
-                            {
-                                template = I.MWUI.templates.textEditLine,
-                                props = {
-                                    text = tostring(value[attribute]),
-                                    size = util.vector2(20, 0),
-                                },
-                                events = {
-                                    textChanged = async:callback(function(text)
-                                        lastInput = text
-                                    end),
-                                    focusLoss = async:callback(function()
-                                        if not lastInput then return end
-                                        local number = validateNumber(lastInput, argument)
-                                        if not number then
-                                            set(coeffs)
-                                        end
-                                        if number and number ~= value then
-                                            coeffs[attribute] = number
-                                            set(coeffs)
-                                        end
-                                    end),
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            createAttributeField(value, set, argument, attribute, coeffs, v2(20, 0))
         }
     }
 end
 
 
-I.Settings.registerRenderer(info.name .. 'Coefficients', function(value, set, argument)      
+I.Settings.registerRenderer(info.name .. 'Coefficients', function(value, set, argument)
     local rendererLayout = {
         type = ui.TYPE.Flex,
         props = {arrange = ui.ALIGNMENT.End},
         content = ui.content {
-            createNumberField(value, set, argument, 'strength', true),
-            createNumberField(value, set, argument, 'intelligence'),
-            createNumberField(value, set, argument, 'willpower'),
-            createNumberField(value, set, argument, 'agility'),
-            createNumberField(value, set, argument, 'speed'),
-            createNumberField(value, set, argument, 'endurance'),
-            createNumberField(value, set, argument, 'personality'),
-            createNumberField(value, set, argument, 'luck')
+            createCoefficientField(value, set, argument, 'strength', true),
+            createCoefficientField(value, set, argument, 'intelligence'),
+            createCoefficientField(value, set, argument, 'willpower'),
+            createCoefficientField(value, set, argument, 'agility'),
+            createCoefficientField(value, set, argument, 'speed'),
+            createCoefficientField(value, set, argument, 'endurance'),
+            createCoefficientField(value, set, argument, 'personality'),
+            createCoefficientField(value, set, argument, 'luck')
         }
     }
     return disable(argument.disabled, rendererLayout)

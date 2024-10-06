@@ -6,6 +6,7 @@ local storage = require('openmw.storage')
 
 local info = require('scripts.PotentialCharacterProgression.info')
 
+local playerSettings = storage.playerSection('SettingsPlayer' .. info.name)
 local healthSettings = storage.playerSection('SettingsPlayer' .. info.name .. 'Health')
 
 input.registerTrigger {
@@ -50,7 +51,36 @@ I.Settings.registerGroup {
             default = 100,
             argument = {
                 integer = true,
-                min = 0
+                min = 0,
+                disabled = playerSettings:get('UniqueAttributeCap')
+            }
+        },
+        {
+            key = 'UniqueAttributeCap',
+            renderer = 'checkbox',
+            name = 'UniqueAttributeCapName',
+            description = 'UniqueAttributeCapDesc',
+            default = false
+        },
+        {
+            key = 'UniqueAttributeCapValues',
+            renderer = info.name .. 'UniqueCaps',
+            name = 'UniqueAttributeCapValuesName',
+            default = {
+                strength = 100,
+                intelligence = 100,
+                willpower = 100,
+                agility = 100,
+                speed = 100,
+                endurance = 100,
+                personality = 100,
+                luck = 100
+            },
+            argument = {
+                integer = true,
+                min = 0,
+                max = nil,
+                disabled = not playerSettings:get('UniqueAttributeCap')
             }
         }
     }
@@ -251,6 +281,11 @@ local function dependentSetting(dependentKey, key, value, section, sectionKey, c
         I.Settings.updateRendererArgument(sectionKey, dependentKey, {disabled = disabled})
     end
 end
+
+playerSettings:subscribe(async:callback(function(section, key)
+    dependentSetting('AttributeCap', 'UniqueAttributeCap', false, playerSettings, 'SettingsPlayer' .. info.name, key)
+    dependentSetting('UniqueAttributeCapValues', 'UniqueAttributeCap', true, playerSettings, 'SettingsPlayer' .. info.name, key)
+end))
 
 healthSettings:subscribe(async:callback(function(section, key)
     dependentSetting('RetroactiveStartHealth', 'RetroactiveHealth', true, healthSettings, 'SettingsPlayer' .. info.name .. 'Health', key)

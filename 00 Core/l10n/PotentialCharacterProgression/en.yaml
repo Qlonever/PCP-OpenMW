@@ -2,15 +2,20 @@ ModName: "Potential Character Progression"
 
 PageName: "Potential Character Progression"
 
-SettingsPlayerBasicName: "Basic Settings"
+SettingsBasicName: "Basic Settings"
 
 MenuKeyName: "Potential Menu Key"
 
 JailExploitName: "Allow Jail Time Exploit"
 JailExploitDesc: "If enabled, skill points lost in jail and then regained later will still contribute to potential and level-up progress."
 
-AttributeCapName: "Attributes Maximum Value"
+AttributeCapName: "Attribute Cap"
 AttributeCapDesc: "You cannot raise attributes past this value."
+
+UniqueAttributeCapName: "Cap Attributes Individually"
+UniqueAttributeCapDesc: "If enabled, each attribute will have a unique maximum value that it cannot be raised past."
+
+UniqueAttributeCapValuesName: ""
 
 SettingsHealthName: "Health Settings"
 SettingsHealthDesc: "These settings affect how characters gain health. With default settings, health is gained the same way as in vanilla Morrowind."

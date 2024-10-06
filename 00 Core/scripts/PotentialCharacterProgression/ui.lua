@@ -34,7 +34,9 @@ local playerSettings = storage.playerSection('SettingsPlayer' .. info.name)
 local balanceSettings = storage.playerSection('SettingsPlayer' .. info.name .. 'Balance')
 local debugSettings = storage.playerSection('SettingsPlayer' .. info.name .. 'Debug')
 
-local attributeCap
+local isCapUnique
+local sharedAttributeCap
+local attributeCaps
 local debugMode
 local expCostTable
 
@@ -86,16 +88,9 @@ local menu
 
 local expFlex
 
-local attributeFlex
-local attributeExp
-local attributeNames
-local attributeDecs
-local attributeNums
-local attributeIncs
+local uiColumns = {}
 
 local potentialFlex
-local attributePotsInt
-local attributePotsFrac
 
 local autoButton
 local confirmButton
@@ -458,10 +453,10 @@ end
 -- Update specified columns
 local function updateAttributeRows(changed)
     local map = {
-        exp = attributeExp,
-        dec = attributeDecs,
-        num = attributeNums,
-        inc = attributeIncs,
+        exp = uiColumns.attributeExp,
+        dec = uiColumns.attributeDecs,
+        num = uiColumns.attributeNums,
+        inc = uiColumns.attributeIncs,
         pot = potentialFlex
     }
     for k, _ in pairs(changed) do
@@ -476,17 +471,17 @@ local function modifyAttributeRow(attributeid, isOrigin)
     -- If this row caused its own change
     if isOrigin then
         -- Change value, experience
-        attributeNums.layout.content[attributeid].content[attributeid].props.text = tostring(attribute.base + attribute.ups)
-        attributeExp.layout.content[attributeid].content[attributeid].props.alpha = 0
+        uiColumns.attributeNums.layout.content[attributeid].content[attributeid].props.text = tostring(attribute.base + attribute.ups)
+        uiColumns.attributeExp.layout.content[attributeid].content[attributeid].props.alpha = 0
         if attribute.experience > 0 then
-            attributeExp.layout.content[attributeid].content[attributeid].content.value.props.text = L('MenuCount') .. attribute.experience
-            attributeExp.layout.content[attributeid].content[attributeid].props.alpha = 1
+            uiColumns.attributeExp.layout.content[attributeid].content[attributeid].content.value.props.text = L('MenuCount') .. attribute.experience
+            uiColumns.attributeExp.layout.content[attributeid].content[attributeid].props.alpha = 1
         end
         changed.num = true
         changed.exp = true
 
-        -- Color attribute potential, don't bother if debug mode is enabled
-        if not debugMode then
+        -- Color attribute potential, don't bother if debug mode is enabled or base is already above cap
+        if not (debugMode or attribute.base > attributeCaps[attributeid]) then
             local diff = math.floor(attribute.potential) - attribute.ups
 
             local potentialColor = myui.interactiveTextColors.normal.default
@@ -496,30 +491,30 @@ local function modifyAttributeRow(attributeid, isOrigin)
                 potentialColor = myui.interactiveTextColors.active.default
             end
 
-            if potentialColor ~= attributePotsInt.content[attributeid].content[attributeid].props.textColor then
-                attributePotsInt.content[attributeid].content[attributeid].props.textColor = potentialColor
-                attributePotsFrac.content[attributeid].content[attributeid].props.textColor = potentialColor
+            if potentialColor ~= uiColumns.attributePotsInt.content[attributeid].content[attributeid].props.textColor then
+                uiColumns.attributePotsInt.content[attributeid].content[attributeid].props.textColor = potentialColor
+                uiColumns.attributePotsFrac.content[attributeid].content[attributeid].props.textColor = potentialColor
                 changed.pot = true
             end
         end
 
         -- Enable/disable attribute decrement button
-        if (attribute.base + attribute.ups <= 0 or (not debugMode and attribute.ups <= 0)) and not attributeDecs.layout.content[attributeid].content[attributeid].userData.isDisabled then
-            myui.disableWidget(attributeDecs.layout.content[attributeid].content[attributeid])
+        if (attribute.base + attribute.ups <= 0 or (not debugMode and attribute.ups <= 0)) and not uiColumns.attributeDecs.layout.content[attributeid].content[attributeid].userData.isDisabled then
+            myui.disableWidget(uiColumns.attributeDecs.layout.content[attributeid].content[attributeid])
             changed.dec = true
-        elseif ((debugMode == true and attribute.base + attribute.ups > 0) or attribute.ups > 0) and attributeDecs.layout.content[attributeid].content[attributeid].userData.isDisabled then
-            myui.enableWidget(attributeDecs.layout.content[attributeid].content[attributeid])
+        elseif ((debugMode == true and attribute.base + attribute.ups > 0) or attribute.ups > 0) and uiColumns.attributeDecs.layout.content[attributeid].content[attributeid].userData.isDisabled then
+            myui.enableWidget(uiColumns.attributeDecs.layout.content[attributeid].content[attributeid])
             changed.dec = true
         end
     end
 
     -- Enable/disable attribute increment button
     local cost = expCost(attribute.isFavored, attribute.ups + 1 > attribute.potential)
-    if (cost > uiExperience or attribute.base + attribute.ups + 1 > attributeCap) and not attributeIncs.layout.content[attributeid].content[attributeid].userData.isDisabled then
-        myui.disableWidget(attributeIncs.layout.content[attributeid].content[attributeid])
+    if (cost > uiExperience or attribute.base + attribute.ups + 1 > attributeCaps[attributeid]) and not uiColumns.attributeIncs.layout.content[attributeid].content[attributeid].userData.isDisabled then
+        myui.disableWidget(uiColumns.attributeIncs.layout.content[attributeid].content[attributeid])
         changed.inc = true
-    elseif cost <= uiExperience and attribute.base + attribute.ups + 1 <= attributeCap and attributeIncs.layout.content[attributeid].content[attributeid].userData.isDisabled then
-        myui.enableWidget(attributeIncs.layout.content[attributeid].content[attributeid])
+    elseif cost <= uiExperience and attribute.base + attribute.ups + 1 <= attributeCaps[attributeid] and uiColumns.attributeIncs.layout.content[attributeid].content[attributeid].userData.isDisabled then
+        myui.enableWidget(uiColumns.attributeIncs.layout.content[attributeid].content[attributeid])
         changed.inc = true
     end
     return changed
@@ -650,7 +645,13 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
 
     -- Set these at menu creation so settings can update mid-session
 
-    attributeCap = playerSettings:get('AttributeCap')
+    sharedAttributeCap = playerSettings:get('AttributeCap')
+    isCapUnique = playerSettings:get('UniqueAttributeCap')
+    if isCapUnique then
+        attributeCaps = playerSettings:get('UniqueAttributeCapValues')
+    else
+        attributeCaps = {}
+    end
     
     debugMode = debugSettings:get('DebugMode')
 
@@ -668,30 +669,35 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
     -- Create the interactive parts of the UI
 
     -- Create UI columns
-    attributeExp = ui.create{name = 'attributeExp', type = ui.TYPE.Flex, content = ui.content{myui.padWidget(44,0)}}
-    attributeNames = {name = 'attributeNames', type = ui.TYPE.Flex, content = ui.content{}}
-    attributeDecs = ui.create{name = 'attributeDecs', type = ui.TYPE.Flex, content = ui.content{}}
-    attributeNums = ui.create{name = 'attributeNums', type = ui.TYPE.Flex, props = {arrange = ui.ALIGNMENT.End }, content = ui.content{myui.padWidget(30,0)}}
-    attributeIncs = ui.create{name = 'attributeIncs', type = ui.TYPE.Flex, content = ui.content{}}
-    attributePotsInt = {name = 'attributePotsInt', type = ui.TYPE.Flex, props = {arrange = ui.ALIGNMENT.End}, content = ui.content{}}
-    attributePotsFrac = {name = 'attributePotsFrac', type = ui.TYPE.Flex, content = ui.content{}}
+    uiColumns = {
+        attributeExp = ui.create{name = 'attributeExp', type = ui.TYPE.Flex, content = ui.content{myui.padWidget(44,0)}},
+        attributeNames = {name = 'attributeNames', type = ui.TYPE.Flex, content = ui.content{}},
+        attributeDecs = ui.create{name = 'attributeDecs', type = ui.TYPE.Flex, content = ui.content{}},
+        attributeNums = ui.create{name = 'attributeNums', type = ui.TYPE.Flex, props = {arrange = ui.ALIGNMENT.End }, content = ui.content{myui.padWidget(30,0)}},
+        attributeIncs = ui.create{name = 'attributeIncs', type = ui.TYPE.Flex, content = ui.content{}},
+        attributePotsInt = {name = 'attributePotsInt', type = ui.TYPE.Flex, props = {arrange = ui.ALIGNMENT.End}, content = ui.content{}},
+        attributePotsFrac = {name = 'attributePotsFrac', type = ui.TYPE.Flex, content = ui.content{}}
+    }
 
     -- Populate UI columns
     for _, orderedAttribute in ipairs(orderedAttributeData) do
         uiAttributes[orderedAttribute.id] = {}
         local attributeid = orderedAttribute.id
         local attribute = uiAttributes[attributeid]
-        attribute.experience = 0
-        attribute.base = Player.stats.attributes[attributeid](self).base
-        orderedAttribute.potential = math.min(orderedAttribute.potential, attributeCap - attribute.base)
-        attribute.potential = orderedAttribute.potential
-        attribute.ups = 0
         if attribute.isFavored == nil then
             attribute.isFavored = contains(playerClassRecord.attributes, attributeid)
         end
+        if attributeCaps[attributeid] == nil then
+            attributeCaps[attributeid] = sharedAttributeCap
+        end
+        attribute.experience = 0
+        attribute.base = Player.stats.attributes[attributeid](self).base
+        orderedAttribute.potential = math.min(orderedAttribute.potential, attributeCaps[attributeid] - attribute.base)
+        attribute.potential = orderedAttribute.potential
+        attribute.ups = 0
 
         -- EXP spent indicator
-        attributeExp.layout.content:add(sizeRow{
+        uiColumns.attributeExp.layout.content:add(sizeRow{
             name = attributeid,
             type = ui.TYPE.Flex,
             props = {horizontal = true, alpha = 0.0},
@@ -731,16 +737,15 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
         if attribute.isFavored then
             nameLayout.props.textColor = myui.textColors.positive
         end
-        attributeNames.content:add{name = 'nameflex', type = ui.TYPE.Flex, props = {horizontal = true, arrange = ui.ALIGNMENT.Center}, content = ui.content { myui.padWidget(6,rowHeight), nameLayout, myui.padWidget(10,rowHeight)}}
+        uiColumns.attributeNames.content:add{name = 'nameflex', type = ui.TYPE.Flex, props = {horizontal = true, arrange = ui.ALIGNMENT.Center}, content = ui.content { myui.padWidget(6,rowHeight), nameLayout, myui.padWidget(10,rowHeight)}}
 
         -- Decrement button
-        local decLayout = myui.createImageButton(attributeDecs, attributeid, {resource = resources.buttonDec, anchor = v2(0.5, 0.5), size = v2(32, 32)}, modUiAttribute, {attributeid, -1})
-        attributeDecs.layout.content:add(sizeRow(decLayout, v2(10, 18)))
+        local decLayout = myui.createImageButton(uiColumns.attributeDecs, attributeid, {resource = resources.buttonDec, anchor = v2(0.5, 0.5), size = v2(32, 32)}, modUiAttribute, {attributeid, -1})
+        uiColumns.attributeDecs.layout.content:add(sizeRow(decLayout, v2(10, 18)))
 
         -- Increment button
-        local incLayout = myui.createImageButton(attributeIncs, attributeid, {resource = resources.buttonInc, anchor = v2(0.5, 0.5), size = v2(32, 32)}, modUiAttribute, {attributeid, 1})
-        local cost = expCost(attribute.isFavored, attribute.potential - attribute.ups < 1)
-        attributeIncs.layout.content:add(sizeRow(incLayout, v2(10, 18)))
+        local incLayout = myui.createImageButton(uiColumns.attributeIncs, attributeid, {resource = resources.buttonInc, anchor = v2(0.5, 0.5), size = v2(32, 32)}, modUiAttribute, {attributeid, 1})
+        uiColumns.attributeIncs.layout.content:add(sizeRow(incLayout, v2(10, 18)))
 
         -- Attribute value
         local numLayout = {
@@ -749,13 +754,13 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
             template = I.MWUI.templates.textNormal,
             props = {text = tostring(attribute.base)}
         }
-        attributeNums.layout.content:add{name = attributeid, type = ui.TYPE.Flex, props = {horizontal = true, arrange = ui.ALIGNMENT.Center}, content = ui.content {myui.padWidget(4, rowHeight), numLayout, myui.padWidget(4, rowHeight)}}
+        uiColumns.attributeNums.layout.content:add{name = attributeid, type = ui.TYPE.Flex, props = {horizontal = true, arrange = ui.ALIGNMENT.Center}, content = ui.content {myui.padWidget(4, rowHeight), numLayout, myui.padWidget(4, rowHeight)}}
 
         local potString = tostring(attribute.potential + attribute.base)
 
         -- Potential whole number, split to align at decimal point
         local potInt = potString:sub(potString:find('^%d+'))
-        attributePotsInt.content:add(sizeRow{
+        uiColumns.attributePotsInt.content:add(sizeRow{
             name = attributeid,
             type = ui.TYPE.Text,
             template = I.MWUI.templates.textNormal,
@@ -764,7 +769,7 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
 
         -- Potential decimal, split to align at decimal point
         local potFrac = potString:gsub('^%d+', '')
-        attributePotsFrac.content:add(sizeRow{
+        uiColumns.attributePotsFrac.content:add(sizeRow{
             name = attributeid,
             type = ui.TYPE.Text,
             template = I.MWUI.templates.textNormal,
@@ -843,11 +848,11 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
                 type = ui.TYPE.Flex,
                 props = {horizontal = true},
                 content = ui.content {
-                    attributeExp,
-                    attributeNames,
-                    attributeDecs,
-                    attributeNums,
-                    attributeIncs
+                    uiColumns.attributeExp,
+                    uiColumns.attributeNames,
+                    uiColumns.attributeDecs,
+                    uiColumns.attributeNums,
+                    uiColumns.attributeIncs
                 }
             }
         }
@@ -871,8 +876,8 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
                 type = ui.TYPE.Flex,
                 props = {horizontal = true},
                 content = ui.content {
-                    attributePotsInt,
-                    attributePotsFrac
+                    uiColumns.attributePotsInt,
+                    uiColumns.attributePotsFrac
                 }
             }
         }
