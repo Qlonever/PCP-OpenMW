@@ -1,5 +1,5 @@
 # Potential Character Progression
-### Ver. 1.0.1
+### Ver. 1.0.2
 Potential Character Progression (PCP) is an OpenMW lua mod that changes Morrowind's level-up mechanics. The first aim of PCP is to eliminate any need to level up optimally, freeing you from having to raise your character's skills in any specific way. The second aim is to avoid sacrificing player input in the level-up process or changing any other mechanics.
 
 ## Potential
@@ -26,14 +26,26 @@ By default, PCP is balanced so that 20 skill increases will allow you to raise y
 
 ### Potential Menu Key
 This key opens up the potential menu, where you can check and use your potential and experience. This is the same menu that you see upon leveling up. (Default: L)
-### Retroactive Health Gain
-If enabled, raising endurance will affect the health gained from previous level-ups as well. (Default: OFF)
-### Retroactive Starting Health
-If this and "Retroactive Health Gain" are enabled, raising endurance or strength will affect the initial health from character creation. (Default: OFF)
 ### Allow Jail Time Exploit
 If enabled, skill points lost in jail and then regained later will still contribute to potential and level-up progress. (Default: OFF)
-### Attributes Maximum Value
-You cannot raise attributes past this value. (Default: 100)
+### Attribute Cap
+You cannot raise attributes above this value. (Default: 100)
+### Cap Attributes Individually
+If enabled, each attribute will have a configurable maximum value that it cannot be raised above. (Default: OFF)
+</Details>
+<Details>
+<Summary>Health Settings</Summary>
+
+### Retroactive Health Gain
+If enabled, raising attributes will affect the health gained from previous level-ups as well. (Default: OFF)
+### Retroactive Starting Health
+If this and 'Retroactive Health Gain' are enabled, raising attributes will affect the initial health from character creation. (Default: OFF)
+### Custom Health Calculation
+If enabled, health will be calculated using a weighted average of attribute values, instead of just endurance and strength. (Default: OFF)
+### Custom Health Coefficients
+If 'Custom Health Calculation' is enabled, health gain and starting health will be derived from this average: `(sum of (coeffs * attributes)) / (sum of coeffs)` (Default: Configured to match NCGDMW Lua)
+### Custom Health Gain Multiplier
+If 'Custom Health Calculation' is enabled, health gained from level-ups will be equal to the weighted average above multiplied by this value. (Default: 0.1)
 </Details>
 <Details>
 <Summary>Balance Settings</Summary>
@@ -83,12 +95,14 @@ PCP requires a development build of OpenMW newer than August 2024, or any releas
 Anything that changes the level-up process likely won't work with PCP, but mods that occasionally increase/decrease attributes outside of level-ups are fine. Mods changing character creation or skill progression should work too.
 Also, PCP can be added to an existing save without issues.
 ### Updating
-Updating this mod on an existing save shouldn't pose any problems. If there is an issue, though, you will be informed via a pop-up message when you load the save.
+Updating this mod on an existing save shouldn't pose any major problems. However, if existing mod settings change between versions, you may have to re-configure them. An in-game message will inform you if this happens.
 
 ## Credits
 Author: Qlonever
 
 Special thanks to everyone in the OpenMW Discord server who answered my Lua modding questions, especially S3ctor.
+Additional thanks to the creators of NCGDMW Lua for letting me use some of their settings as defaults in PCP. (https://www.nexusmods.com/morrowind/mods/53136)
 
 ## Source
-This mod can be found on Github: https://github.com/Qlonever/PCP-OpenMW Updates there will be smaller and more frequent.
+This mod can be found on Github: https://github.com/Qlonever/PCP-OpenMW 
+Updates there will be smaller and more frequent.
