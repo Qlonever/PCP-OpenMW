@@ -3,7 +3,6 @@ local ambient = require('openmw.ambient')
 local async = require('openmw.async')
 local core = require('openmw.core')
 local I = require('openmw.interfaces')
-local types = require('openmw.types')
 local ui = require('openmw.ui')
 local util = require('openmw.util')
 

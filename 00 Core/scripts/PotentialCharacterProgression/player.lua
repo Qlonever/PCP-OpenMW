@@ -39,6 +39,7 @@ end
 -- Mod settings
 
 local playerSettings = storage.playerSection('SettingsPlayer' .. info.name)
+local healthSettings = storage.playerSection('SettingsPlayer' .. info.name .. 'Health')
 local balanceSettings = storage.playerSection('SettingsPlayer' .. info.name .. 'Balance')
 
 -- Game settings
@@ -106,6 +107,7 @@ local totalSkillUpsCurLevel = 0
 -- Runtime Variables
 
 local isCharGenFinished = false
+local startAttributes
 local isLevelUp = true
 local levelUpData
 
@@ -145,24 +147,92 @@ end
 local function increaseHealth(healthIncrease)
     totalHealthGained = totalHealthGained + healthIncrease
     playerStats.dynamic.health(self).base = playerStats.dynamic.health(self).base + healthIncrease
-    playerStats.dynamic.health(self).current = math.max(playerStats.dynamic.health(self).current + healthIncrease, 1)
+    playerStats.dynamic.health(self).current = math.min(math.max(playerStats.dynamic.health(self).current + healthIncrease, 1), playerStats.dynamic.health(self).base)
 end
 
--- Recalculate retroactive starting health
-local function calculateRetroStartHealth()
-    local playerRecords = getPlayerRecords()
-    local currentEndurance = playerAttributes.endurance(self).base
-    local currentStrength = playerAttributes.strength(self).base
-    local initAttributes = {
-        strength = playerRecords.race.attributes.strength[playerRecords.sex],
-        endurance = playerRecords.race.attributes.endurance[playerRecords.sex]
-    }
-    for _, attributeid in pairs(playerRecords.class.attributes) do
-        if attributeid == 'strength' or attributeid == 'endurance' then
-            initAttributes[attributeid] = initAttributes[attributeid] + 10
+-- Calculate starting attribute values, not factoring in birthsigns
+local function getStartingAttributes()
+    if not startAttributes then
+        local playerRecords = getPlayerRecords()
+        startAttributes = {}
+        for attributeid, _ in pairs(attributeData) do
+            startAttributes[attributeid] = playerRecords.race.attributes[attributeid][playerRecords.sex]
+        end
+        for _, attributeid in pairs(playerRecords.class.attributes) do
+            startAttributes[attributeid] = startAttributes[attributeid] + 10
         end
     end
-    return (currentStrength + currentEndurance - initAttributes.strength - initAttributes.endurance) * 0.5
+    return startAttributes
+end
+
+-- Get current base attribute values
+local function getBaseAttributes()
+    local baseAttributes = {}
+    for attributeid, _ in pairs(attributeData) do
+        baseAttributes[attributeid] = playerAttributes[attributeid](self).base
+    end
+    return baseAttributes
+end
+
+-- Calculate weighted average for the custom health setting
+local function calculateWeightedAverage(attributes)
+    local coefficients = healthSettings:get('CustomHealthCoefficients')
+    local average = 0
+    local coefficientsSum = 0
+    for attributeid, attribute in pairs(attributes) do
+        average = average + attribute * coefficients[attributeid]
+        coefficientsSum = coefficientsSum + math.max(coefficients[attributeid], 0)
+    end
+    if coefficientsSum == 0 then
+        return 0
+    else
+        return average / coefficientsSum
+    end
+end
+
+-- Calculate starting health under specified conditions
+local function calculateStartHealth(retroactive, custom)
+    local attributes
+    if retroactive then
+        attributes = getBaseAttributes()
+    else
+        attributes = getStartingAttributes()
+    end
+    if custom then
+        return calculateWeightedAverage(attributes)
+    else
+        return (attributes.endurance + attributes.strength) * 0.5
+    end
+end
+
+-- Given attribute values, calculate health gained from one level up
+local function calculateLevelHealth(attributes)
+    if healthSettings:get('CustomHealth') then
+        return calculateWeightedAverage(attributes) * healthSettings:get('GainMultiplier')
+    else
+        return attributes.endurance * levelHealthMult
+    end
+end
+
+-- Given attribute values, calculate health gain and optionally starting health
+local function calculateHealthIncrease(attributes, isRetroactive, isStart, gainLevels)
+    if not attributes then
+        attributes = getBaseAttributes()
+    end
+
+    local levelHealth = calculateLevelHealth(attributes) * gainLevels
+    local startHealth
+    local base
+
+    if isRetroactive then
+        startHealth = calculateStartHealth(isStart, healthSettings:get('CustomHealth'))
+        base = calculateStartHealth(false, false) + totalHealthGained
+    else
+        startHealth = 0
+        base = 0
+    end
+
+    increaseHealth(startHealth + levelHealth - base)
 end
 
 
@@ -195,7 +265,7 @@ end
 -- Show the level-up menu
 -- When called by the normal level-up mechanics, increase level and give experience to distribute
 local function showMenu()
-    if isLevelUp then
+    if isLevelUp and isCharGenFinished then
         local levelsGained = math.floor(playerStats.level(self).progress / skillUpsPerLevel)
         -- Without this check, the player can (harmlessly) trigger the same level up over and over with the right timing
         if levelsGained > 0 then
@@ -246,21 +316,14 @@ end
 
 local function hideMenu()
     PLui.hideMenu()
-    -- If leveled up, remove all health granted by this mod, then recalculate with base attributes
-    -- Other sources of endurance/strength and health should be integrated correctly
+    -- If leveled up, recalculate health with base attributes
+    -- Other sources of attribute increases and health should be integrated correctly
     -- Do this in the hide function so it still triggers even if the player just closes the menu
     if levelUpData then
-        local currentEndurance = playerAttributes.endurance(self).base
-        local healthIncrease = currentEndurance * levelHealthMult
-        if playerSettings:get('RetroactiveHealth') then
-            healthIncrease = healthIncrease * levelUps - totalHealthGained
-            if playerSettings:get('RetroactiveStartHealth') then
-                healthIncrease = healthIncrease + calculateRetroStartHealth()
-            end
-        else
-            healthIncrease = healthIncrease * levelUpData.ups
-        end
-        increaseHealth(healthIncrease)
+        local retroactive = healthSettings:get('RetroactiveHealth')
+        local retroactiveStart = retroactive and healthSettings:get('RetroactiveStartHealth')
+        local gainLevels = (retroactive and levelUps) or levelUpData.ups
+        calculateHealthIncrease(nil, retroactive, retroactiveStart, gainLevels)
     end
     isLevelUp = true
     levelUpData = nil
@@ -277,18 +340,21 @@ local function finishMenu(data)
         playerAttributes[attributeid](self).base = playerAttributes[attributeid](self).base + uiAttribute.ups
     end
     
-    -- If the menu wasn't triggered by a level-up, increase health based on endurance increases
-    -- Other sources of endurance/strength won't be integrated until the next level-up
+    -- Calculate health gain even if menu wasn't triggered by a level-up
+    -- If retroactive gain is off, calculate only with menu attribute increases, don't integrate other attribute increases
     -- Do this in the finish menu event so we don't have to pass individual increase data to the hide function
     if not isLevelUp then
-        local healthIncrease = data.uiAttributes.endurance.ups * levelHealthMult
-        if playerSettings:get('RetroactiveHealth') then
-            healthIncrease = healthIncrease * levelUps
-            if playerSettings:get('RetroactiveStartHealth') then
-                healthIncrease = healthIncrease + (data.uiAttributes.endurance.ups + data.uiAttributes.strength.ups) * 0.5
+        local retroactive = healthSettings:get('RetroactiveHealth')
+        local retroactiveStart = retroactive and healthSettings:get('RetroactiveStartHealth')
+        if retroactive then
+            calculateHealthIncrease(nil, true, retroactiveStart, levelUps)
+        else
+            local healthAttributes = {}
+            for attributeid, attribute in pairs(data.uiAttributes) do
+                healthAttributes[attributeid] = attribute.ups
             end
+            calculateHealthIncrease(healthAttributes, false, false, 1)
         end
-        increaseHealth(healthIncrease)
     end
     
     experience = data.uiExperience
@@ -345,13 +411,10 @@ I.SkillProgression.addSkillLevelUpHandler(handleskillUps)
 -- Record skill values when finishing character creation or when first loading this script on an existing character
 local function finishCharGen()
     -- Update health with relevant settings
-    -- Have to check this because you can, in fact, level up before finishing character creation
-    if levelUps == 0 then
-        -- Birthsign bonuses should affect starting health immediately
-        if playerSettings:get('RetroactiveHealth') and playerSettings:get('RetroactiveStartHealth') then
-            local healthIncrease = calculateRetroStartHealth()
-            increaseHealth(healthIncrease)
-        end
+    if healthSettings:get('RetroactiveHealth') and healthSettings:get('RetroactiveStartHealth') then
+        calculateHealthIncrease(false, true, true, 0)
+    elseif healthSettings:get('CustomHealth') then
+        calculateHealthIncrease(getStartingAttributes(), true, false, 0)
     end
 
     for skillid, skill in pairs(playerSkills) do

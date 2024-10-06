@@ -6,17 +6,38 @@ SettingsPlayerName: "Player Settings"
 
 MenuKeyName: "Potential Menu Key"
 
-RetroactiveHealthName: "Retroactive Health Gain"
-RetroactiveHealthDesc: "If enabled, raising endurance will affect the health gained from previous level-ups as well."
-
-RetroactiveStartHealthName: "Retroactive Starting Health"
-RetroactiveStartHealthDesc: "If this and 'Retroactive Health Gain' are enabled, raising endurance or strength will affect the initial health from character creation."
-
 JailExploitName: "Allow Jail Time Exploit"
 JailExploitDesc: "If enabled, skill points lost in jail and then regained later will still contribute to potential and level-up progress."
 
 AttributeCapName: "Attributes Maximum Value"
 AttributeCapDesc: "You cannot raise attributes past this value."
+
+SettingsHealthName: "Health Settings"
+SettingsHealthDesc: "These settings affect how characters gain health. With default settings, health is gained the same way as in vanilla Morrowind."
+
+RetroactiveHealthName: "Retroactive Health Gain"
+RetroactiveHealthDesc: "If enabled, raising attributes will affect the health gained from previous level-ups as well."
+
+RetroactiveStartHealthName: "Retroactive Starting Health"
+RetroactiveStartHealthDesc: "If this and 'Retroactive Health Gain' are enabled, raising attributes will affect the initial health from character creation."
+
+CustomHealthName: "Custom Health Calculation"
+CustomHealthDesc: "If enabled, health will be calculated using a weighted average of attribute values, instead of just endurance and strength."
+
+CustomHealthCoefficientsName: "Custom Health Coefficients"
+CustomHealthCoefficientsDesc: "If 'Custom Health Calculation' is enabled, health gain and starting health will be derived from this average:     (sum of (coeffs * attributes)) /            (sum of coeffs)"
+
+StrengthAbbreviation: "STR"
+IntelligenceAbbreviation: "INT"
+WillpowerAbbreviation: "WIL"
+AgilityAbbreviation: "AGI"
+SpeedAbbreviation: "SPD"
+EnduranceAbbreviation: "END"
+PersonalityAbbreviation: "PER"
+LuckAbbreviation: "LUC"
+
+GainMultiplierName: "Custom Health Gain Multiplier"
+GainMultiplierDesc: "If 'Custom Health Calculation' is enabled, health gained from level-ups will be equal to the weighted average above multiplied by this value."
 
 SettingsBalanceName: "Balance Settings"
 SettingsBalanceDesc: "These settings will alter the balance of character progression. Be careful when changing them."
