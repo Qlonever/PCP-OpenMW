@@ -30,9 +30,11 @@ end
 
 -- Mod settings
 
-local playerSettings = storage.playerSection('SettingsPlayer' .. info.name)
-local balanceSettings = storage.playerSection('SettingsPlayer' .. info.name .. 'Balance')
-local debugSettings = storage.playerSection('SettingsPlayer' .. info.name .. 'Debug')
+local modSettings = {
+    basic = storage.playerSection('SettingsPlayer' .. info.name),
+    balance = storage.playerSection('SettingsPlayer' .. info.name .. 'Balance'),
+    debug = storage.playerSection('SettingsPlayer' .. info.name .. 'Debug')
+}
 
 local isCapUnique
 local sharedAttributeCap
@@ -645,24 +647,24 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
 
     -- Set these at menu creation so settings can update mid-session
 
-    sharedAttributeCap = playerSettings:get('AttributeCap')
-    isCapUnique = playerSettings:get('UniqueAttributeCap')
+    sharedAttributeCap = modSettings.basic:get('AttributeCap')
+    isCapUnique = modSettings.basic:get('UniqueAttributeCap')
     if isCapUnique then
-        attributeCaps = playerSettings:get('UniqueAttributeCapValues')
+        attributeCaps = modSettings.basic:get('UniqueAttributeCapValues')
     else
         attributeCaps = {}
     end
     
-    debugMode = debugSettings:get('DebugMode')
+    debugMode = modSettings.debug:get('DebugMode')
 
     expCostTable = {
         notFavored = {
-            notOver = balanceSettings:get('ExperienceCost'),
-            over = balanceSettings:get('ExperienceCostOver')
+            notOver = modSettings.balance:get('ExperienceCost'),
+            over = modSettings.balance:get('ExperienceCostOver')
         },
         favored = {
-            notOver = balanceSettings:get('ExperienceCostFavored'),
-            over = balanceSettings:get('ExperienceCostFavoredOver')
+            notOver = modSettings.balance:get('ExperienceCostFavored'),
+            over = modSettings.balance:get('ExperienceCostFavoredOver')
         }
     }
 

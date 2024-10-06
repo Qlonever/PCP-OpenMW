@@ -10,10 +10,10 @@ JailExploitName: "Allow Jail Time Exploit"
 JailExploitDesc: "If enabled, skill points lost in jail and then regained later will still contribute to potential and level-up progress."
 
 AttributeCapName: "Attribute Cap"
-AttributeCapDesc: "You cannot raise attributes past this value."
+AttributeCapDesc: "You cannot raise attributes above this value."
 
 UniqueAttributeCapName: "Cap Attributes Individually"
-UniqueAttributeCapDesc: "If enabled, each attribute will have a unique maximum value that it cannot be raised past."
+UniqueAttributeCapDesc: "If enabled, each attribute will have a configurable maximum value that it cannot be raised above."
 
 UniqueAttributeCapValuesName: ""
 
@@ -41,8 +41,8 @@ EnduranceAbbreviation: "END"
 PersonalityAbbreviation: "PER"
 LuckAbbreviation: "LUC"
 
-GainMultiplierName: "Custom Health Gain Multiplier"
-GainMultiplierDesc: "If 'Custom Health Calculation' is enabled, health gained from level-ups will be equal to the weighted average above multiplied by this value."
+CustomGainMultiplierName: "Custom Health Gain Multiplier"
+CustomGainMultiplierDesc: "If 'Custom Health Calculation' is enabled, health gained from level-ups will be equal to the weighted average above multiplied by this value."
 
 SettingsBalanceName: "Balance Settings"
 SettingsBalanceDesc: "These settings will alter the balance of character progression. Be careful when changing them."

@@ -38,9 +38,19 @@ end
 
 -- Mod settings
 
-local playerSettings = storage.playerSection('SettingsPlayer' .. info.name)
-local healthSettings = storage.playerSection('SettingsPlayer' .. info.name .. 'Health')
-local balanceSettings = storage.playerSection('SettingsPlayer' .. info.name .. 'Balance')
+local modSettings = {
+    basic = storage.playerSection('SettingsPlayer' .. info.name),
+    health = storage.playerSection('SettingsPlayer' .. info.name .. 'Health'),
+    balance = storage.playerSection('SettingsPlayer' .. info.name .. 'Balance')
+}
+
+local healthSettings = {
+    isRetroactive = nil,
+    isStartRetroactive = nil,
+    isCustom = nil,
+    customCoefficients = nil,
+    customGainMult = nil
+}
 
 -- Game settings
 
@@ -143,6 +153,15 @@ end
 
 -- Health functions  -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
+-- Update health settings
+local function updateHealthSettings()
+    healthSettings.isRetroactive = modSettings.health:get('RetroactiveHealth')
+    healthSettings.isStartRetroactive = healthSettings.isRetroactive and modSettings.health:get('RetroactiveStartHealth')
+    healthSettings.isCustom = modSettings.health:get('CustomHealth')
+    healthSettings.customCoefficients = modSettings.health:get('CustomHealthCoefficients')
+    healthSettings.customGainMult = modSettings.health:get('CustomGainMultiplier')
+end
+
 -- Increase max health, apply increase to current health as well
 local function increaseHealth(healthIncrease)
     totalHealthGained = totalHealthGained + healthIncrease
@@ -176,12 +195,11 @@ end
 
 -- Calculate weighted average for the custom health setting
 local function calculateWeightedAverage(attributes)
-    local coefficients = healthSettings:get('CustomHealthCoefficients')
     local average = 0
     local coefficientsSum = 0
     for attributeid, attribute in pairs(attributes) do
-        average = average + attribute * coefficients[attributeid]
-        coefficientsSum = coefficientsSum + math.max(coefficients[attributeid], 0)
+        average = average + attribute * healthSettings.customCoefficients[attributeid]
+        coefficientsSum = coefficientsSum + math.max(healthSettings.customCoefficients[attributeid], 0)
     end
     if coefficientsSum == 0 then
         return 0
@@ -191,14 +209,14 @@ local function calculateWeightedAverage(attributes)
 end
 
 -- Calculate starting health under specified conditions
-local function calculateStartHealth(retroactive, custom)
+local function calculateStartHealth(isRetroactive, isCustom)
     local attributes
-    if retroactive then
+    if isRetroactive then
         attributes = getBaseAttributes()
     else
         attributes = getStartingAttributes()
     end
-    if custom then
+    if isCustom then
         return calculateWeightedAverage(attributes)
     else
         return (attributes.endurance + attributes.strength) * 0.5
@@ -207,15 +225,15 @@ end
 
 -- Given attribute values, calculate health gained from one level up
 local function calculateLevelHealth(attributes)
-    if healthSettings:get('CustomHealth') then
-        return calculateWeightedAverage(attributes) * healthSettings:get('GainMultiplier')
+    if healthSettings.isCustom then
+        return calculateWeightedAverage(attributes) * healthSettings.customGainMult
     else
         return attributes.endurance * levelHealthMult
     end
 end
 
 -- Given attribute values, calculate health gain and optionally starting health
-local function calculateHealthIncrease(attributes, isRetroactive, isStart, gainLevels)
+local function calculateHealthIncrease(attributes, isRetroactive, isStartRetroactive, gainLevels)
     if not attributes then
         attributes = getBaseAttributes()
     end
@@ -225,7 +243,7 @@ local function calculateHealthIncrease(attributes, isRetroactive, isStart, gainL
     local base
 
     if isRetroactive then
-        startHealth = calculateStartHealth(isStart, healthSettings:get('CustomHealth'))
+        startHealth = calculateStartHealth(isStartRetroactive, healthSettings.isCustom)
         base = calculateStartHealth(false, false) + totalHealthGained
     else
         startHealth = 0
@@ -265,6 +283,8 @@ end
 -- Show the level-up menu
 -- When called by the normal level-up mechanics, increase level and give experience to distribute
 local function showMenu()
+    updateHealthSettings()
+
     if isLevelUp and isCharGenFinished then
         local levelsGained = math.floor(playerStats.level(self).progress / skillUpsPerLevel)
         -- Without this check, the player can (harmlessly) trigger the same level up over and over with the right timing
@@ -273,7 +293,7 @@ local function showMenu()
             local nextLevel = playerStats.level(self).current + levelsGained
             playerStats.level(self).current = nextLevel
             levelUps = levelUps + levelsGained
-            experience = experience + (levelsGained * balanceSettings:get('ExperiencePerLevel'))
+            experience = experience + (levelsGained * modSettings.balance:get('ExperiencePerLevel'))
             ambient.streamMusic('Music/Special/MW_Triumph.mp3')
             
             levelUpData = {
@@ -316,14 +336,12 @@ end
 
 local function hideMenu()
     PLui.hideMenu()
-    -- If leveled up, recalculate health with base attributes
+    -- If leveled up or retroactive health gain enabled, calculate health gain with base attributes
     -- Other sources of attribute increases and health should be integrated correctly
     -- Do this in the hide function so it still triggers even if the player just closes the menu
-    if levelUpData then
-        local retroactive = healthSettings:get('RetroactiveHealth')
-        local retroactiveStart = retroactive and healthSettings:get('RetroactiveStartHealth')
-        local gainLevels = (retroactive and levelUps) or levelUpData.ups
-        calculateHealthIncrease(nil, retroactive, retroactiveStart, gainLevels)
+    if levelUpData or healthSettings.isRetroactive then
+        local gainLevels = (healthSettings.isRetroactive and levelUps) or levelUpData.ups
+        calculateHealthIncrease(nil, healthSettings.isRetroactive, healthSettings.isStartRetroactive, gainLevels)
     end
     isLevelUp = true
     levelUpData = nil
@@ -340,21 +358,15 @@ local function finishMenu(data)
         playerAttributes[attributeid](self).base = playerAttributes[attributeid](self).base + uiAttribute.ups
     end
     
-    -- Calculate health gain even if menu wasn't triggered by a level-up
-    -- If retroactive gain is off, calculate only with menu attribute increases, don't integrate other attribute increases
+    -- If menu wasn't triggered by a level-up and retroactive gain is off, calculate health gain for 1 level
+    -- Calculate only with menu attribute increases, don't integrate other attribute increases
     -- Do this in the finish menu event so we don't have to pass individual increase data to the hide function
-    if not isLevelUp then
-        local retroactive = healthSettings:get('RetroactiveHealth')
-        local retroactiveStart = retroactive and healthSettings:get('RetroactiveStartHealth')
-        if retroactive then
-            calculateHealthIncrease(nil, true, retroactiveStart, levelUps)
-        else
-            local healthAttributes = {}
-            for attributeid, attribute in pairs(data.uiAttributes) do
-                healthAttributes[attributeid] = attribute.ups
-            end
-            calculateHealthIncrease(healthAttributes, false, false, 1)
+    if not (isLevelUp or healthSettings.isRetroactive) then
+        local healthAttributes = {}
+        for attributeid, attribute in pairs(data.uiAttributes) do
+            healthAttributes[attributeid] = attribute.ups
         end
+        calculateHealthIncrease(healthAttributes, false, false, 1)
     end
     
     experience = data.uiExperience
@@ -374,7 +386,7 @@ end
 local function handleskillUps(skillid, source, options)
     local skillIncrease = options.skillIncreaseValue
     local skillNewValue = skillIncrease + playerSkills[skillid](self).base
-    if not playerSettings:get('JailExploit') then
+    if not modSettings.basic:get('JailExploit') then
         skillIncrease = util.clamp(skillNewValue - skillData[skillid].peak, 0, skillIncrease)
     end
     skillData[skillid].peak = math.max(skillNewValue, skillData[skillid].peak)
@@ -385,11 +397,11 @@ local function handleskillUps(skillid, source, options)
 
     local playerRecords = getPlayerRecords()
 
-    local potentialMult = balanceSettings:get('PotentialPerSkill')
+    local potentialMult = modSettings.balance:get('PotentialPerSkill')
     if contains(playerRecords.class.minorSkills, skillid) then
-        potentialMult = balanceSettings:get('PotentialPerMinorSkill')
+        potentialMult = modSettings.balance:get('PotentialPerMinorSkill')
     elseif contains(playerRecords.class.majorSkills, skillid) then
-        potentialMult = balanceSettings:get('PotentialPerMajorSkill')
+        potentialMult = modSettings.balance:get('PotentialPerMajorSkill')
     end
     attributeData[options.levelUpAttribute].potential = attributeData[options.levelUpAttribute].potential + skillIncrease * potentialMult
     
@@ -411,9 +423,10 @@ I.SkillProgression.addSkillLevelUpHandler(handleskillUps)
 -- Record skill values when finishing character creation or when first loading this script on an existing character
 local function finishCharGen()
     -- Update health with relevant settings
-    if healthSettings:get('RetroactiveHealth') and healthSettings:get('RetroactiveStartHealth') then
+    updateHealthSettings()
+    if healthSettings.isStartRetroactive then
         calculateHealthIncrease(false, true, true, 0)
-    elseif healthSettings:get('CustomHealth') then
+    elseif healthSettings.isCustom then
         calculateHealthIncrease(getStartingAttributes(), true, false, 0)
     end
 
@@ -421,7 +434,7 @@ local function finishCharGen()
         skillData[skillid].peak = skill(self).base
     end
     totalSkillUpsCurLevel = playerStats.level(self).progress % skillUpsPerLevel
-    local keybind = input.getKeyName(playerSettings:get('MenuKey'))
+    local keybind = input.getKeyName(modSettings.basic:get('MenuKey'))
     local charGenCallback = async:registerTimerCallback('charGenMessage', function() ui.showMessage(L('StartUp', {keybind = keybind}), {showInDialogue = false}) end)
     async:newSimulationTimer(0.1, charGenCallback)
 end
@@ -452,7 +465,7 @@ end
 input.registerTriggerHandler('Menu' .. info.name, async:callback(levelMenuKey))
 
 local function onKeyPress(key)
-    if key.code == playerSettings:get('MenuKey') then
+    if key.code == modSettings.basic:get('MenuKey') then
         input.activateTrigger('Menu' .. info.name)
     end
 end

@@ -6,8 +6,10 @@ local storage = require('openmw.storage')
 
 local info = require('scripts.PotentialCharacterProgression.info')
 
-local playerSettings = storage.playerSection('SettingsPlayer' .. info.name)
-local healthSettings = storage.playerSection('SettingsPlayer' .. info.name .. 'Health')
+local modSettings = {
+    basic = storage.playerSection('SettingsPlayer' .. info.name),
+    health = storage.playerSection('SettingsPlayer' .. info.name .. 'Health')
+}
 
 input.registerTrigger {
     key = 'Menu' .. info.name,
@@ -52,7 +54,7 @@ I.Settings.registerGroup {
             argument = {
                 integer = true,
                 min = 0,
-                disabled = playerSettings:get('UniqueAttributeCap')
+                disabled = modSettings.basic:get('UniqueAttributeCap')
             }
         },
         {
@@ -80,7 +82,7 @@ I.Settings.registerGroup {
                 integer = true,
                 min = 0,
                 max = nil,
-                disabled = not playerSettings:get('UniqueAttributeCap')
+                disabled = not modSettings.basic:get('UniqueAttributeCap')
             }
         }
     }
@@ -111,7 +113,7 @@ I.Settings.registerGroup {
             description = 'RetroactiveStartHealthDesc',
             default = false,
             argument = {
-                disabled = not healthSettings:get('RetroactiveHealth')
+                disabled = not modSettings.health:get('RetroactiveHealth')
             }
         },
         {
@@ -140,20 +142,20 @@ I.Settings.registerGroup {
                 integer = false,
                 min = nil,
                 max = nil,
-                disabled = not healthSettings:get('CustomHealth')
+                disabled = not modSettings.health:get('CustomHealth')
             }
         },
         {
-            key = 'GainMultiplier',
+            key = 'CustomGainMultiplier',
             renderer = 'number',
-            name = 'GainMultiplierName',
-            description = 'GainMultiplierDesc',
+            name = 'CustomGainMultiplierName',
+            description = 'CustomGainMultiplierDesc',
             default = 0.1,
             argument = {
                 integer = false,
                 min = 0,
                 max = nil,
-                disabled = not healthSettings:get('CustomHealth')
+                disabled = not modSettings.health:get('CustomHealth')
             }
         }
     }
@@ -282,13 +284,13 @@ local function dependentSetting(dependentKey, key, value, section, sectionKey, c
     end
 end
 
-playerSettings:subscribe(async:callback(function(section, key)
-    dependentSetting('AttributeCap', 'UniqueAttributeCap', false, playerSettings, 'SettingsPlayer' .. info.name, key)
-    dependentSetting('UniqueAttributeCapValues', 'UniqueAttributeCap', true, playerSettings, 'SettingsPlayer' .. info.name, key)
+modSettings.basic:subscribe(async:callback(function(section, key)
+    dependentSetting('AttributeCap', 'UniqueAttributeCap', false, modSettings.basic, 'SettingsPlayer' .. info.name, key)
+    dependentSetting('UniqueAttributeCapValues', 'UniqueAttributeCap', true, modSettings.basic, 'SettingsPlayer' .. info.name, key)
 end))
 
-healthSettings:subscribe(async:callback(function(section, key)
-    dependentSetting('RetroactiveStartHealth', 'RetroactiveHealth', true, healthSettings, 'SettingsPlayer' .. info.name .. 'Health', key)
-    dependentSetting('CustomHealthCoefficients', 'CustomHealth', true, healthSettings, 'SettingsPlayer' .. info.name .. 'Health', key)
-    dependentSetting('GainMultiplier', 'CustomHealth', true, healthSettings, 'SettingsPlayer' .. info.name .. 'Health', key)
+modSettings.health:subscribe(async:callback(function(section, key)
+    dependentSetting('RetroactiveStartHealth', 'RetroactiveHealth', true, modSettings.health, 'SettingsPlayer' .. info.name .. 'Health', key)
+    dependentSetting('CustomHealthCoefficients', 'CustomHealth', true, modSettings.health, 'SettingsPlayer' .. info.name .. 'Health', key)
+    dependentSetting('CustomGainMultiplier', 'CustomHealth', true, modSettings.health, 'SettingsPlayer' .. info.name .. 'Health', key)
 end))
