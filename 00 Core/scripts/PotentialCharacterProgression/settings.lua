@@ -19,21 +19,112 @@ I.Settings.registerPage {
     name = 'PageName'
 }
 
--- Debug settings
+-- Basic settings
 
 I.Settings.registerGroup {
-    key = 'SettingsPlayer' .. info.name .. 'Debug',
+    key = 'SettingsPlayer' .. info.name,
     page = 'Page' .. info.name,
+    order = 1,
     l10n = info.name,
-    name = 'SettingsDebugName',
+    name = 'SettingsBasicName',
     permanentStorage = true,
     settings = {
         {
-            key = 'DebugMode',
+            key = 'MenuKey',
+            renderer = info.name .. 'KeyBind',
+            name = 'MenuKeyName',
+            default = input.KEY.L
+        },
+        {
+            key = 'JailExploit',
             renderer = 'checkbox',
-            name = 'DebugModeName',
-            description = 'DebugModeDesc',
+            name = 'JailExploitName',
+            description = 'JailExploitDesc',
             default = false
+        },
+        {
+            key = 'AttributeCap',
+            renderer = 'number',
+            name = 'AttributeCapName',
+            description = 'AttributeCapDesc',
+            default = 100,
+            argument = {
+                integer = true,
+                min = 0
+            }
+        }
+    }
+}
+
+-- Health settings
+
+I.Settings.registerGroup {
+    key = 'SettingsPlayer' .. info.name .. 'Health',
+    page = 'Page' .. info.name,
+    order = 2,
+    l10n = info.name,
+    name = 'SettingsHealthName',
+    description = 'SettingsHealthDesc',
+    permanentStorage = true,
+    settings = {
+        {
+            key = 'RetroactiveHealth',
+            renderer = 'checkbox',
+            name = 'RetroactiveHealthName',
+            description = 'RetroactiveHealthDesc',
+            default = false
+        },
+        {
+            key = 'RetroactiveStartHealth',
+            renderer = 'checkbox',
+            name = 'RetroactiveStartHealthName',
+            description = 'RetroactiveStartHealthDesc',
+            default = false,
+            argument = {
+                disabled = not healthSettings:get('RetroactiveHealth')
+            }
+        },
+        {
+            key = 'CustomHealth',
+            renderer = 'checkbox',
+            name = 'CustomHealthName',
+            description = 'CustomHealthDesc',
+            default = false
+        },
+        {
+            key = 'CustomHealthCoefficients',
+            renderer = info.name .. 'Coefficients',
+            name = 'CustomHealthCoefficientsName',
+            description = 'CustomHealthCoefficientsDesc',
+            default = {
+                strength = 2,
+                intelligence = 0,
+                willpower = 1,
+                agility = 0,
+                speed = 0,
+                endurance = 4,
+                personality = 0,
+                luck = 0
+            },
+            argument = {
+                integer = false,
+                min = nil,
+                max = nil,
+                disabled = not healthSettings:get('CustomHealth')
+            }
+        },
+        {
+            key = 'GainMultiplier',
+            renderer = 'number',
+            name = 'GainMultiplierName',
+            description = 'GainMultiplierDesc',
+            default = 0.1,
+            argument = {
+                integer = false,
+                min = 0,
+                max = nil,
+                disabled = not healthSettings:get('CustomHealth')
+            }
         }
     }
 }
@@ -43,6 +134,7 @@ I.Settings.registerGroup {
 I.Settings.registerGroup {
     key = 'SettingsPlayer' .. info.name .. 'Balance',
     page = 'Page' .. info.name,
+    order = 3,
     l10n = info.name,
     name = 'SettingsBalanceName',
     description = 'SettingsBalanceDesc',
@@ -128,113 +220,27 @@ I.Settings.registerGroup {
     }
 }
 
--- Health settings
+-- Debug settings
 
 I.Settings.registerGroup {
-    key = 'SettingsPlayer' .. info.name .. 'Health',
+    key = 'SettingsPlayer' .. info.name .. 'Debug',
     page = 'Page' .. info.name,
+    order = 4,
     l10n = info.name,
-    name = 'SettingsHealthName',
-    description = 'SettingsHealthDesc',
+    name = 'SettingsDebugName',
     permanentStorage = true,
     settings = {
         {
-            key = 'RetroactiveHealth',
+            key = 'DebugMode',
             renderer = 'checkbox',
-            name = 'RetroactiveHealthName',
-            description = 'RetroactiveHealthDesc',
+            name = 'DebugModeName',
+            description = 'DebugModeDesc',
             default = false
-        },
-        {
-            key = 'RetroactiveStartHealth',
-            renderer = 'checkbox',
-            name = 'RetroactiveStartHealthName',
-            description = 'RetroactiveStartHealthDesc',
-            default = false,
-            argument = {
-                disabled = not healthSettings:get('RetroactiveHealth')
-            }
-        },
-        {
-            key = 'CustomHealth',
-            renderer = 'checkbox',
-            name = 'CustomHealthName',
-            description = 'CustomHealthDesc',
-            default = false
-        },
-        {
-            key = 'CustomHealthCoefficients',
-            renderer = info.name .. 'Coefficients',
-            name = 'CustomHealthCoefficientsName',
-            description = 'CustomHealthCoefficientsDesc',
-            default = {
-                strength = 2,
-                intelligence = 0,
-                willpower = 1,
-                agility = 0,
-                speed = 0,
-                endurance = 4,
-                personality = 0,
-                luck = 0
-            },
-            argument = {
-                integer = false,
-                min = nil,
-                max = nil,
-                disabled = not healthSettings:get('CustomHealth')
-            }
-        },
-        {
-            key = 'GainMultiplier',
-            renderer = 'number',
-            name = 'GainMultiplierName',
-            description = 'GainMultiplierDesc',
-            default = 0.1,
-            argument = {
-                integer = false,
-                min = 0,
-                max = nil,
-                disabled = not healthSettings:get('CustomHealth')
-            }
         }
     }
 }
 
--- Basic player settings
-
-I.Settings.registerGroup {
-    key = 'SettingsPlayer' .. info.name,
-    page = 'Page' .. info.name,
-    l10n = info.name,
-    name = 'SettingsPlayerName',
-    permanentStorage = true,
-    settings = {
-        {
-            key = 'MenuKey',
-            renderer = info.name .. 'KeyBind',
-            name = 'MenuKeyName',
-            default = input.KEY.L
-        },
-        {
-            key = 'JailExploit',
-            renderer = 'checkbox',
-            name = 'JailExploitName',
-            description = 'JailExploitDesc',
-            default = false
-        },
-        {
-            key = 'AttributeCap',
-            renderer = 'number',
-            name = 'AttributeCapName',
-            description = 'AttributeCapDesc',
-            default = 100,
-            argument = {
-                integer = true,
-                min = 0
-            }
-        }
-    }
-}
+-- Dependent Settings
 
 local function dependentSetting(dependentKey, key, value, section, sectionKey, changedKey)
     if changedKey == key then
