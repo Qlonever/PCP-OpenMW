@@ -67,6 +67,7 @@ I.Settings.registerRenderer(info.name .. 'KeyBind', function(value, set)
     return rendererLayout
 end)
 
+-- Unused selection renderer
 I.Settings.registerRenderer(info.name .. 'Select', function(value, set, argument)
     local optionsContent = ui.content {}
     for _, item in pairs(argument.items) do

@@ -59,19 +59,19 @@ local maxCoins = 30
 -- Menu resources
 
 local resources = {
-    buttonDec = ui.texture{path = 'icons/menu_number_dec.dds', size = v2(10, 18)},
-    buttonInc = ui.texture{path = 'icons/menu_number_inc.dds', size = v2(10, 18)},
-    classArt = ui.texture{path = 'textures/levelup/acrobat.dds', size = v2(256, 128)},
-    coin = ui.texture{path = 'icons/tx_goldicon.dds', size = v2(16, 16)},
-    barColor = ui.texture{path = 'textures/menu_bar_gray.dds', size = v2(16, 16)},
-    agility = ui.texture{path = 'icons/k/attribute_agility.dds', size = v2(32, 32)},
-    endurance = ui.texture{path = 'icons/k/attribute_endurance.dds', size = v2(32, 32)},
-    intelligence = ui.texture{path = 'icons/k/attribute_int.dds', size = v2(32, 32)},
-    luck = ui.texture{path = 'icons/k/attribute_luck.dds', size = v2(32, 32)},
-    personality = ui.texture{path = 'icons/k/attribute_personality.dds', size = v2(32, 32)},
-    speed = ui.texture{path = 'icons/k/attribute_speed.dds', size = v2(32, 32)},
-    strength = ui.texture{path = 'icons/k/attribute_strength.dds', size = v2(32, 32)},
-    willpower = ui.texture{path = 'icons/k/attribute_wilpower.dds', size = v2(32, 32)}
+    buttonDec = ui.texture{path = 'icons/menu_number_dec.dds'},
+    buttonInc = ui.texture{path = 'icons/menu_number_inc.dds'},
+    classArt = ui.texture{path = 'textures/levelup/acrobat.dds'},
+    coin = ui.texture{path = 'icons/tx_goldicon.dds'},
+    barColor = ui.texture{path = 'textures/menu_bar_gray.dds'},
+    agility = ui.texture{path = 'icons/k/attribute_agility.dds'},
+    endurance = ui.texture{path = 'icons/k/attribute_endurance.dds'},
+    intelligence = ui.texture{path = 'icons/k/attribute_int.dds'},
+    luck = ui.texture{path = 'icons/k/attribute_luck.dds'},
+    personality = ui.texture{path = 'icons/k/attribute_personality.dds'},
+    speed = ui.texture{path = 'icons/k/attribute_speed.dds'},
+    strength = ui.texture{path = 'icons/k/attribute_strength.dds'},
+    willpower = ui.texture{path = 'icons/k/attribute_wilpower.dds'}
 }
 
 -- Menu variables
@@ -617,14 +617,20 @@ local function hideMenu()
     tooltipLayout.props.visible = false
 end
 
--- Use the same height value for every row
-local function sizeRow(layout)
+-- Use the same height value for every row, special handling to cut off button textures
+local function sizeRow(layout, size)
+    local properties = {horizontal = true, arrange = ui.ALIGNMENT.Center}
+    local padHeight = rowHeight
+    if size then
+        properties = {autoSize = false, size = v2(size.x, rowHeight)}
+        padHeight = (rowHeight - size.y) * 0.5
+    end
     local rowLayout = {
         name = layout.name,
         type = ui.TYPE.Flex,
-        props = {horizontal = true, arrange = ui.ALIGNMENT.Center},
+        props = properties,
         content = ui.content {
-            myui.padWidget(0, rowHeight),
+            myui.padWidget(0, padHeight),
             layout
         }
     }
@@ -728,13 +734,13 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
         attributeNames.content:add{name = 'nameflex', type = ui.TYPE.Flex, props = {horizontal = true, arrange = ui.ALIGNMENT.Center}, content = ui.content { myui.padWidget(6,rowHeight), nameLayout, myui.padWidget(10,rowHeight)}}
 
         -- Decrement button
-        local decLayout = myui.createImageButton(attributeDecs, attributeid, {resource = resources.buttonDec, anchor = v2(0.5, 0.5), size = v2(10, 18)}, modUiAttribute, {attributeid, -1})
-        attributeDecs.layout.content:add(sizeRow(decLayout))
+        local decLayout = myui.createImageButton(attributeDecs, attributeid, {resource = resources.buttonDec, anchor = v2(0.5, 0.5), size = v2(32, 32)}, modUiAttribute, {attributeid, -1})
+        attributeDecs.layout.content:add(sizeRow(decLayout, v2(10, 18)))
 
         -- Increment button
-        local incLayout = myui.createImageButton(attributeIncs, attributeid, {resource = resources.buttonInc, anchor = v2(0.5, 0.5), size = v2(10, 18)}, modUiAttribute, {attributeid, 1})
+        local incLayout = myui.createImageButton(attributeIncs, attributeid, {resource = resources.buttonInc, anchor = v2(0.5, 0.5), size = v2(32, 32)}, modUiAttribute, {attributeid, 1})
         local cost = expCost(attribute.isFavored, attribute.potential - attribute.ups < 1)
-        attributeIncs.layout.content:add(sizeRow(incLayout))
+        attributeIncs.layout.content:add(sizeRow(incLayout, v2(10, 18)))
 
         -- Attribute value
         local numLayout = {
@@ -901,7 +907,7 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
         else
             levelUpLayout.content.levelFlex.content.levelUpText.props.text = levelUpTextDefault
         end
-        resources.classArt = ui.texture{path = 'textures/levelup/' .. levelUpData.class .. '.dds', size = v2(256, 128)}
+        resources.classArt = ui.texture{path = 'textures/levelup/' .. levelUpData.class .. '.dds'}
         levelUpArt.props.resource = resources.classArt
         menuLayout.content.padding.content.mainFlex.content[1] = levelUpLayout
     else
