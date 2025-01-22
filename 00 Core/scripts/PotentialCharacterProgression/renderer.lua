@@ -135,7 +135,7 @@ local function validateNumber(text, argument)
     return number
 end
 
-local function createAttributeField(value, set, argument, attribute, valueCopy, size)
+local function createAttributeField(value, set, argument, attribute, size)
     return {
         type = ui.TYPE.Container,
         template = I.MWUI.templates.box,
@@ -157,14 +157,12 @@ local function createAttributeField(value, set, argument, attribute, valueCopy, 
                             focusLoss = async:callback(function()
                                 if not lastInput then return end
                                 local number = validateNumber(lastInput, argument)
-                                if not number then
-                                    set(valueCopy)
-                                end
+                                lastInput = nil
                                 if number and number ~= value then
-                                    valueCopy[attribute] = number
-                                    set(valueCopy)
+                                    value[attribute] = number
                                 end
-                            end),
+                                set(value)
+                            end)
                         }
                     }
                 }
@@ -176,10 +174,6 @@ end
 -- Renderer for unique attribute caps
 local function createUniqueCapField(value, set, argument, attribute)
     local lastInput = nil
-    local caps = {}
-    for k, v in pairs(value) do
-        caps[k] = v
-    end
     return {
         type = ui.TYPE.Flex,
         props = {horizontal = true, arrange = ui.ALIGNMENT.Center},
@@ -189,7 +183,7 @@ local function createUniqueCapField(value, set, argument, attribute)
                 template = I.MWUI.templates.textNormal,
                 props = {text = gameSettings[attribute .. 'Name'] .. ' '}
             },
-            createAttributeField(value, set, argument, attribute, caps, v2(60, 0))
+            createAttributeField(value, set, argument, attribute, v2(60, 0))
         }
     }
 end
@@ -220,10 +214,6 @@ end)
 -- Renderer for custom health coefficients
 local function createCoefficientField(value, set, argument, attribute, first)
     local lastInput = nil
-    local coeffs = {}
-    for k, v in pairs(value) do
-        coeffs[k] = v
-    end
     local plus = {}
     if not first then
         plus = {
@@ -247,7 +237,7 @@ local function createCoefficientField(value, set, argument, attribute, first)
                 template = I.MWUI.templates.textNormal,
                 props = {text = ' x ', autoSize = false, size = v2(19, 18), textAlignV = ui.ALIGNMENT.Start}
             },
-            createAttributeField(value, set, argument, attribute, coeffs, v2(20, 0))
+            createAttributeField(value, set, argument, attribute, v2(20, 0))
         }
     }
 end
