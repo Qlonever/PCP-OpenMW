@@ -384,36 +384,45 @@ end
 -- Increase level progress and attribute potential for every skill increase 
 -- Also track highest value for each skill, for use with the jail exploit setting
 local function handleskillUps(skillid, source, options)
-    local skillIncrease = options.skillIncreaseValue
-    local skillNewValue = skillIncrease + playerSkills[skillid](self).base
-    if not modSettings.basic:get('JailExploit') then
-        skillIncrease = util.clamp(skillNewValue - skillData[skillid].peak, 0, skillIncrease)
-    end
-    skillData[skillid].peak = math.max(skillNewValue, skillData[skillid].peak)
-    skillData[skillid].ups = skillData[skillid].ups + skillIncrease
-    skillData[skillid].upsCurLevel = skillData[skillid].upsCurLevel + skillIncrease
-    totalSkillUpsCurLevel = totalSkillUpsCurLevel + skillIncrease
-    options.levelUpProgress = skillIncrease
-
-    local playerRecords = getPlayerRecords()
-
-    local potentialMult = modSettings.balance:get('PotentialPerSkill')
-    if contains(playerRecords.class.minorSkills, skillid) then
-        potentialMult = modSettings.balance:get('PotentialPerMinorSkill')
-    elseif contains(playerRecords.class.majorSkills, skillid) then
-        potentialMult = modSettings.balance:get('PotentialPerMajorSkill')
-    end
-    attributeData[options.levelUpAttribute].potential = attributeData[options.levelUpAttribute].potential + skillIncrease * potentialMult
-    
-    -- Prepare for level-up
-    if totalSkillUpsCurLevel >= skillUpsPerLevel then
-        totalSkillUpsCurLevel = totalSkillUpsCurLevel % skillUpsPerLevel
-        for skillid, skill in pairs(skillData) do
-            skillData[skillid].upsLastLevels = skillData[skillid].upsLastLevels + skillData[skillid].upsCurLevel
+    options.levelUpProgress = nil
+    if options.skillIncreaseValue and options.levelUpAttribute then
+        local skillIncrease = options.skillIncreaseValue
+        local skillNewValue = skillIncrease + playerSkills[skillid](self).base
+        if not modSettings.basic:get('JailExploit') then
+            skillIncrease = skillNewValue - skillData[skillid].peak
         end
-        setSkillsValue('upsCurLevel', 0)
-        skillData[skillid].upsLastLevels = skillData[skillid].upsLastLevels - totalSkillUpsCurLevel
-        skillData[skillid].upsCurLevel = totalSkillUpsCurLevel
+        skillIncrease = util.clamp(skillIncrease, 0, options.skillIncreaseValue)
+        
+        if skillIncrease == 0 then
+            return true
+        end
+        
+        skillData[skillid].peak = math.max(skillNewValue, skillData[skillid].peak)
+        skillData[skillid].ups = skillData[skillid].ups + skillIncrease
+        skillData[skillid].upsCurLevel = skillData[skillid].upsCurLevel + skillIncrease
+        totalSkillUpsCurLevel = totalSkillUpsCurLevel + skillIncrease
+        options.levelUpProgress = skillIncrease
+
+        local playerRecords = getPlayerRecords()
+
+        local potentialMult = modSettings.balance:get('PotentialPerSkill')
+        if contains(playerRecords.class.minorSkills, skillid) then
+            potentialMult = modSettings.balance:get('PotentialPerMinorSkill')
+        elseif contains(playerRecords.class.majorSkills, skillid) then
+            potentialMult = modSettings.balance:get('PotentialPerMajorSkill')
+        end
+        attributeData[options.levelUpAttribute].potential = attributeData[options.levelUpAttribute].potential + skillIncrease * potentialMult
+        
+        -- Prepare for level-up
+        if totalSkillUpsCurLevel >= skillUpsPerLevel then
+            totalSkillUpsCurLevel = totalSkillUpsCurLevel % skillUpsPerLevel
+            for skillid, skill in pairs(skillData) do
+                skillData[skillid].upsLastLevels = skillData[skillid].upsLastLevels + skillData[skillid].upsCurLevel
+            end
+            setSkillsValue('upsCurLevel', 0)
+            skillData[skillid].upsLastLevels = skillData[skillid].upsLastLevels - totalSkillUpsCurLevel
+            skillData[skillid].upsCurLevel = totalSkillUpsCurLevel
+        end
     end
     return true
 end
