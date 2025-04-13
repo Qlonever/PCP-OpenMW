@@ -157,6 +157,35 @@ for k, t in pairs(buttonTemplates) do
     templates[k] = t
 end
 
+templates.disabled = {
+    type = ui.TYPE.Container,
+    props = {
+        alpha = 0.4
+    },
+    content = ui.content {
+        {
+            props = {
+                relativeSize = util.vector2(1, 1)
+            },
+            external = {
+                slot = true
+            }
+        },
+        --[[
+        {
+            type = ui.TYPE.Image,
+            props = {
+                resource = constants.whiteTexture,
+                color = util.color.rgb(0, 0, 0),
+                relativeSize = util.vector2(1, 1)
+            }
+        }
+        --]]
+    }
+}
+
+    
+
 -- Create a padding template with adjustable size in both axes
 local function padding(sizeH, sizeV)
     local customPadding = {

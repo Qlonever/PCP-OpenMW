@@ -63,6 +63,17 @@ ExperienceCostFavoredName: "To Raise Favored Attribute"
 
 ExperienceCostFavoredOverName: "To Raise Favored Attribute Over Potential"
 
+LevelProgressPerSkillName: "Level Progress Per Misc. Skill Increase"
+
+LevelProgressPerMinorSkillName: "Level Progress Per Minor Skill Increase"
+
+LevelProgressPerMajorSkillName: "Level Progress Per Major Skill Increase"
+
+SettingsSkillName: "Skill Settings"
+
+CustomSkillAttributesName: "Custom Skill-Attribute Assignment"
+CustomSkillAttributesDesc: "If enabled, you can change which attributes' potential each skill will contribute to. Total potential gained from a skill increase will remain the same, but it will be split between attributes by the adjustable ratios below."
+
 SettingsDebugName: "Debug Settings"
 
 DebugModeName: "Enable Debug Mode"
@@ -75,7 +86,7 @@ VersionOld: "[Potential Character Progression]: You are using an older mod versi
 SaveVersionNew: "[Potential Character Progression]: You should not see this message. If you somehow do, report it to the mod author."
 SaveVersionOld: "[Potential Character Progression]: You are using an older mod version than the one previously used on this save file. Character progression data may be lost if you continue without updating."
 
-SettingsVersionNew: "[Potential Character Progression]: Some settings have changed since the last version. Check this mod's settings in Options > Scripts to ensure everything is configured to your liking."
+SettingsVersionNew: "[Potential Character Progression]: The following settings have changed since the previous version used by this save, and need to be set again:"
 SettingsVersionOld: "[Potential Character Progression]: You are using an older mod version than the one previously used on this save file. Your settings may be lost if you continue without updating."
 
 UpdateOpenMW: "[Potential Character Progression]: Your OpenMW version is too old for this mod. Use a release newer than 0.48 or the latest development build."
@@ -89,3 +100,25 @@ MenuUnused: "Unused potential and experience can be used later."
 MenuDistribute: "Auto-Distribute"
 
 MenuCount: "x"
+
+ButtonConfirmSizeX: 41
+ButtonConfirmSizeY: 17
+ButtonAutoSizeX: 129
+ButtonAutoSizeY: 17
+
+TooltipStrengthSizeX: 419
+TooltipStrengthSizeY: 48
+TooltipIntelligenceSizeX: 348
+TooltipIntelligenceSizeY: 16
+TooltipWillpowerSizeX: 408
+TooltipWillpowerSizeY: 32
+TooltipAgilitySizeX: 411
+TooltipAgilitySizeY: 32
+TooltipSpeedSizeX: 259
+TooltipSpeedSizeY: 16
+TooltipEnduranceSizeX: 410
+TooltipEnduranceSizeY: 32
+TooltipPersonalitySizeX: 429
+TooltipPersonalitySizeY: 32
+TooltipLuckSizeX: 314
+TooltipLuckSizeY: 16

@@ -26,6 +26,10 @@ local function contains(t, element)
   return false
 end
 
+local function capital(text)
+    return text:gsub('^%l', string.upper)
+end
+
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
 -- Mod settings
@@ -110,14 +114,14 @@ local tooltip
 -- Tooltip layouts/functions
 
 local attributeSettings = {
-    strength = {desc = 'sStrDesc', size = v2(419, 48)},
-    intelligence = {desc = 'sIntDesc', size = v2(348, 16)},
-    willpower = {desc = 'sWilDesc', size = v2(408, 32)},
-    agility = {desc = 'sAgiDesc', size = v2(411, 32)},
-    speed = {desc = 'sSpdDesc', size = v2(259, 16)},
-    endurance = {desc = 'sEndDesc', size = v2(410, 32)},
-    personality = {desc = 'sPerDesc', size = v2(429, 32)},
-    luck = {desc = 'sLucDesc', size = v2(314, 16)}
+    strength = {desc = 'sStrDesc', size = v2(tonumber(L('TooltipStrengthSizeX')), tonumber(L('TooltipStrengthSizeY')))},
+    intelligence = {desc = 'sIntDesc', size = v2(tonumber(L('TooltipIntelligenceSizeX')), tonumber(L('TooltipIntelligenceSizeY')))},
+    willpower = {desc = 'sWilDesc', size = v2(tonumber(L('TooltipWillpowerSizeX')), tonumber(L('TooltipWillpowerSizeY')))},
+    agility = {desc = 'sAgiDesc', size = v2(tonumber(L('TooltipAgilitySizeX')), tonumber(L('TooltipAgilitySizeY')))},
+    speed = {desc = 'sSpdDesc', size = v2(tonumber(L('TooltipSpeedSizeX')), tonumber(L('TooltipSpeedSizeY')))},
+    endurance = {desc = 'sEndDesc', size = v2(tonumber(L('TooltipEnduranceSizeX')), tonumber(L('TooltipEnduranceSizeY')))},
+    personality = {desc = 'sPerDesc', size = v2(tonumber(L('TooltipPersonalitySizeX')), tonumber(L('TooltipPersonalitySizeY')))},
+    luck = {desc = 'sLucDesc', size = v2(tonumber(L('TooltipLuckSizeX')), tonumber(L('TooltipLuckSizeY')))}
 }
 
 local tooltipLayout = {
@@ -203,14 +207,17 @@ local levelTooltipFlex = {
     }
 }
 
-local function createAttributeTooltip(attributeid)
-    if attributeSettings[attributeid] then
-        attributeTooltipFlex.content.headingFlex.content.icon.props.resource = resources[attributeid]
-        attributeTooltipFlex.content.headingFlex.content.name.props.text = core.getGMST('sAttribute' .. attributeid:gsub('^%l', string.upper))
-        attributeTooltipFlex.content.description.props.text = core.getGMST(attributeSettings[attributeid].desc)
-        attributeTooltipFlex.content.description.props.size = attributeSettings[attributeid].size
+local function createAttributeTooltip(attributeId)
+    if attributeSettings[attributeId] then
+        attributeTooltipFlex.props.visible = true
+        attributeTooltipFlex.content.headingFlex.content.icon.props.resource = resources[attributeId]
+        attributeTooltipFlex.content.headingFlex.content.name.props.text = core.getGMST('sAttribute' .. capital(attributeId))
+        attributeTooltipFlex.content.description.props.text = core.getGMST(attributeSettings[attributeId].desc)
+        attributeTooltipFlex.content.description.props.size = attributeSettings[attributeId].size
         tooltip.layout.content.padding.content = ui.content{attributeTooltipFlex}
         tooltip.layout.props.visible = true
+    else
+        attributeTooltipFlex.props.visible = false
     end
 end
 
@@ -226,7 +233,8 @@ local function createLevelTooltip()
 end
 
 local function moveTooltip(mouseEvent, data)
-    tooltip.layout.props.position = mouseEvent.position + v2(0, 40)
+    tooltip.layout.props.anchor = v2(mouseEvent.position.x / ui.screenSize().x, 0)
+    tooltip.layout.props.position = mouseEvent.position + v2(0, 35)
     tooltip:update()
 end
 
@@ -467,23 +475,23 @@ local function updateAttributeRows(changed)
 end
 
 -- Modify content of attribute row, return list of changed columns
-local function modifyAttributeRow(attributeid, isOrigin)
+local function modifyAttributeRow(attributeId, isOrigin)
     local changed = {}
-    local attribute = uiAttributes[attributeid]
+    local attribute = uiAttributes[attributeId]
     -- If this row caused its own change
     if isOrigin then
         -- Change value, experience
-        uiColumns.attributeNums.layout.content[attributeid].content[attributeid].props.text = tostring(attribute.base + attribute.ups)
-        uiColumns.attributeExp.layout.content[attributeid].content[attributeid].props.alpha = 0
+        uiColumns.attributeNums.layout.content[attributeId].content[attributeId].props.text = tostring(attribute.base + attribute.ups)
+        uiColumns.attributeExp.layout.content[attributeId].content[attributeId].props.alpha = 0
         if attribute.experience > 0 then
-            uiColumns.attributeExp.layout.content[attributeid].content[attributeid].content.value.props.text = L('MenuCount') .. attribute.experience
-            uiColumns.attributeExp.layout.content[attributeid].content[attributeid].props.alpha = 1
+            uiColumns.attributeExp.layout.content[attributeId].content[attributeId].content.value.props.text = L('MenuCount') .. attribute.experience
+            uiColumns.attributeExp.layout.content[attributeId].content[attributeId].props.alpha = 1
         end
         changed.num = true
         changed.exp = true
 
         -- Color attribute potential, don't bother if debug mode is enabled or base is already above cap
-        if not (debugMode or attribute.base > attributeCaps[attributeid]) then
+        if not (debugMode or attribute.base > attributeCaps[attributeId]) then
             local diff = math.floor(attribute.potential) - attribute.ups
 
             local potentialColor = myui.interactiveTextColors.normal.default
@@ -493,30 +501,30 @@ local function modifyAttributeRow(attributeid, isOrigin)
                 potentialColor = myui.interactiveTextColors.active.default
             end
 
-            if potentialColor ~= uiColumns.attributePotsInt.content[attributeid].content[attributeid].props.textColor then
-                uiColumns.attributePotsInt.content[attributeid].content[attributeid].props.textColor = potentialColor
-                uiColumns.attributePotsFrac.content[attributeid].content[attributeid].props.textColor = potentialColor
+            if potentialColor ~= uiColumns.attributePotsInt.content[attributeId].content[attributeId].props.textColor then
+                uiColumns.attributePotsInt.content[attributeId].content[attributeId].props.textColor = potentialColor
+                uiColumns.attributePotsFrac.content[attributeId].content[attributeId].props.textColor = potentialColor
                 changed.pot = true
             end
         end
 
         -- Enable/disable attribute decrement button
-        if (attribute.base + attribute.ups <= 0 or (not debugMode and attribute.ups <= 0)) and not uiColumns.attributeDecs.layout.content[attributeid].content[attributeid].userData.isDisabled then
-            myui.disableWidget(uiColumns.attributeDecs.layout.content[attributeid].content[attributeid])
+        if (attribute.base + attribute.ups <= 0 or (not debugMode and attribute.ups <= 0)) and not uiColumns.attributeDecs.layout.content[attributeId].content[attributeId].userData.isDisabled then
+            myui.disableWidget(uiColumns.attributeDecs.layout.content[attributeId].content[attributeId])
             changed.dec = true
-        elseif ((debugMode == true and attribute.base + attribute.ups > 0) or attribute.ups > 0) and uiColumns.attributeDecs.layout.content[attributeid].content[attributeid].userData.isDisabled then
-            myui.enableWidget(uiColumns.attributeDecs.layout.content[attributeid].content[attributeid])
+        elseif ((debugMode == true and attribute.base + attribute.ups > 0) or attribute.ups > 0) and uiColumns.attributeDecs.layout.content[attributeId].content[attributeId].userData.isDisabled then
+            myui.enableWidget(uiColumns.attributeDecs.layout.content[attributeId].content[attributeId])
             changed.dec = true
         end
     end
 
     -- Enable/disable attribute increment button
     local cost = expCost(attribute.isFavored, attribute.ups + 1 > attribute.potential)
-    if (cost > uiExperience or attribute.base + attribute.ups + 1 > attributeCaps[attributeid]) and not uiColumns.attributeIncs.layout.content[attributeid].content[attributeid].userData.isDisabled then
-        myui.disableWidget(uiColumns.attributeIncs.layout.content[attributeid].content[attributeid])
+    if (cost > uiExperience or attribute.base + attribute.ups + 1 > attributeCaps[attributeId]) and not uiColumns.attributeIncs.layout.content[attributeId].content[attributeId].userData.isDisabled then
+        myui.disableWidget(uiColumns.attributeIncs.layout.content[attributeId].content[attributeId])
         changed.inc = true
-    elseif cost <= uiExperience and attribute.base + attribute.ups + 1 <= attributeCaps[attributeid] and uiColumns.attributeIncs.layout.content[attributeid].content[attributeid].userData.isDisabled then
-        myui.enableWidget(uiColumns.attributeIncs.layout.content[attributeid].content[attributeid])
+    elseif cost <= uiExperience and attribute.base + attribute.ups + 1 <= attributeCaps[attributeId] and uiColumns.attributeIncs.layout.content[attributeId].content[attributeId].userData.isDisabled then
+        myui.enableWidget(uiColumns.attributeIncs.layout.content[attributeId].content[attributeId])
         changed.inc = true
     end
     return changed
@@ -524,16 +532,16 @@ end
 
 -- Increment/decrement button functions
 --local function modUiAttribute(data)
-local function modUiAttribute(attributeid, value)
+local function modUiAttribute(attributeId, value)
     local prevExperience = uiExperience
-    attribute = uiAttributes[attributeid]
+    attribute = uiAttributes[attributeId]
     attribute.ups = attribute.ups + value
     local cost = value * expCost(attribute.isFavored, attribute.ups - math.min(value, 0) > attribute.potential)
     uiExperience = uiExperience - cost 
     attribute.experience = attribute.experience + cost
-    local changed = modifyAttributeRow(attributeid, true)
+    local changed = modifyAttributeRow(attributeId, true)
     for iterid, _ in pairs(uiAttributes) do
-        if iterid ~= attributeid then
+        if iterid ~= attributeId then
             if modifyAttributeRow(iterid).inc then
                 changed.inc = true
             end
@@ -548,12 +556,12 @@ end
 local function clearAttributeRows()
     local sum = 0
     local cleared = {}
-    for attributeid, attribute in pairs(uiAttributes) do
+    for attributeId, attribute in pairs(uiAttributes) do
         if attribute.ups > 0 then
             sum = sum + attribute.experience
             attribute.experience = 0
             attribute.ups = 0
-            cleared[attributeid] = true
+            cleared[attributeId] = true
         end
     end
     uiExperience = uiExperience + sum
@@ -569,10 +577,10 @@ local function autoDistribute(data)
         local isSpent = false
         while isSpent == false do
             isSpent = true
-            for attributeid, attribute in pairs(uiAttributes) do
+            for attributeId, attribute in pairs(uiAttributes) do
                 local cost = expCost(attribute.isFavored, false)
                 if attribute.ups + 1 <= attribute.potential and uiExperience >= cost then
-                    touched[attributeid] = true
+                    touched[attributeId] = true
                     attribute.ups = attribute.ups + 1
                     attribute.experience = attribute.experience + cost
                     uiExperience = uiExperience - cost
@@ -585,8 +593,8 @@ local function autoDistribute(data)
     end
     if next(touched) ~= nil then
         local changed = {}
-        for attributeid, attribute in pairs(uiAttributes) do
-            for k, _ in pairs(modifyAttributeRow(attributeid, touched[attributeid])) do
+        for attributeId, attribute in pairs(uiAttributes) do
+            for k, _ in pairs(modifyAttributeRow(attributeId, touched[attributeId])) do
                 changed[k] = true
             end
         end
@@ -605,7 +613,7 @@ end
 
 -- Close the menu, forwarding changes to the main script
 local function confirmMenu()
-    self:sendEvent('FinishMenu', {uiAttributes = uiAttributes, uiExperience = uiExperience, debugMode = debugMode})
+    self:sendEvent(info.name .. 'FinishMenu', {uiAttributes = uiAttributes, uiExperience = uiExperience, debugMode = debugMode})
 end
 
 local function hideMenu()
@@ -684,23 +692,23 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
     -- Populate UI columns
     for _, orderedAttribute in ipairs(orderedAttributeData) do
         uiAttributes[orderedAttribute.id] = {}
-        local attributeid = orderedAttribute.id
-        local attribute = uiAttributes[attributeid]
+        local attributeId = orderedAttribute.id
+        local attribute = uiAttributes[attributeId]
         if attribute.isFavored == nil then
-            attribute.isFavored = contains(playerClassRecord.attributes, attributeid)
+            attribute.isFavored = contains(playerClassRecord.attributes, attributeId)
         end
-        if attributeCaps[attributeid] == nil then
-            attributeCaps[attributeid] = sharedAttributeCap
+        if attributeCaps[attributeId] == nil then
+            attributeCaps[attributeId] = sharedAttributeCap
         end
         attribute.experience = 0
-        attribute.base = Player.stats.attributes[attributeid](self).base
-        orderedAttribute.potential = math.min(orderedAttribute.potential, attributeCaps[attributeid] - attribute.base)
+        attribute.base = Player.stats.attributes[attributeId](self).base
+        orderedAttribute.potential = math.min(orderedAttribute.potential, attributeCaps[attributeId] - attribute.base)
         attribute.potential = orderedAttribute.potential
         attribute.ups = 0
 
         -- EXP spent indicator
         uiColumns.attributeExp.layout.content:add(sizeRow{
-            name = attributeid,
+            name = attributeId,
             type = ui.TYPE.Flex,
             props = {horizontal = true, alpha = 0.0},
             content = ui.content {
@@ -720,13 +728,13 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
 
         -- Attribute name
         local nameLayout = {
-            name = attributeid,
+            name = attributeId,
             type = ui.TYPE.Text,
             template = I.MWUI.templates.textNormal,
-            props = {text = core.getGMST('sAttribute' .. attributeid:gsub('^%l', string.upper))},
+            props = {text = core.getGMST('sAttribute' .. capital(attributeId))},
             events = {
             focusGain = async:callback(function()
-                createAttributeTooltip(attributeid) 
+                createAttributeTooltip(attributeId) 
             end),
             focusLoss = async:callback(function() 
                 destroyTooltip() 
@@ -742,43 +750,43 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
         uiColumns.attributeNames.content:add{name = 'nameflex', type = ui.TYPE.Flex, props = {horizontal = true, arrange = ui.ALIGNMENT.Center}, content = ui.content { myui.padWidget(6,rowHeight), nameLayout, myui.padWidget(10,rowHeight)}}
 
         -- Decrement button
-        local decLayout = myui.createImageButton(uiColumns.attributeDecs, attributeid, {resource = resources.buttonDec, anchor = v2(0.5, 0.5), size = v2(32, 32)}, modUiAttribute, {attributeid, -1})
+        local decLayout = myui.createImageButton(uiColumns.attributeDecs, attributeId, {resource = resources.buttonDec, anchor = v2(0.5, 0.5), size = v2(32, 32)}, modUiAttribute, {attributeId, -1})
         uiColumns.attributeDecs.layout.content:add(sizeRow(decLayout, v2(10, 18)))
 
         -- Increment button
-        local incLayout = myui.createImageButton(uiColumns.attributeIncs, attributeid, {resource = resources.buttonInc, anchor = v2(0.5, 0.5), size = v2(32, 32)}, modUiAttribute, {attributeid, 1})
+        local incLayout = myui.createImageButton(uiColumns.attributeIncs, attributeId, {resource = resources.buttonInc, anchor = v2(0.5, 0.5), size = v2(32, 32)}, modUiAttribute, {attributeId, 1})
         uiColumns.attributeIncs.layout.content:add(sizeRow(incLayout, v2(10, 18)))
 
         -- Attribute value
         local numLayout = {
-            name = attributeid,
+            name = attributeId,
             type = ui.TYPE.Text,
             template = I.MWUI.templates.textNormal,
             props = {text = tostring(attribute.base)}
         }
-        uiColumns.attributeNums.layout.content:add{name = attributeid, type = ui.TYPE.Flex, props = {horizontal = true, arrange = ui.ALIGNMENT.Center}, content = ui.content {myui.padWidget(4, rowHeight), numLayout, myui.padWidget(4, rowHeight)}}
+        uiColumns.attributeNums.layout.content:add{name = attributeId, type = ui.TYPE.Flex, props = {horizontal = true, arrange = ui.ALIGNMENT.Center}, content = ui.content {myui.padWidget(4, rowHeight), numLayout, myui.padWidget(4, rowHeight)}}
 
         local potString = tostring(attribute.potential + attribute.base)
 
         -- Potential whole number, split to align at decimal point
         local potInt = potString:sub(potString:find('^%d+'))
         uiColumns.attributePotsInt.content:add(sizeRow{
-            name = attributeid,
+            name = attributeId,
             type = ui.TYPE.Text,
             template = I.MWUI.templates.textNormal,
             props = {text = potInt}
         })
 
         -- Potential decimal, split to align at decimal point
-        local potFrac = potString:gsub('^%d+', '')
+        local potFrac = potString:gsub('^%d+', ''):sub(1, 4)
         uiColumns.attributePotsFrac.content:add(sizeRow{
-            name = attributeid,
+            name = attributeId,
             type = ui.TYPE.Text,
             template = I.MWUI.templates.textNormal,
             props = {text = potFrac, textColor = potentialColor}
         })
 
-        modifyAttributeRow(attributeid, true)
+        modifyAttributeRow(attributeId, true)
     end
 
     -- Remaining EXP indicator
@@ -888,8 +896,10 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
     -- Confirm and auto-distribute buttons
     confirmButton = ui.create{}
     autoButton = ui.create{}
-    confirmButton.layout = myui.createTextButton(confirmButton, okayText, 'normal', 'confirmButton', {}, v2(41, 17), confirmMenu)
-    autoButton.layout = myui.createTextButton(autoButton, L('MenuDistribute'), 'normal', 'autoButton', {}, v2(129, 17), autoDistribute)
+    confirmButtonSize = v2(tonumber(L('ButtonConfirmSizeX')), tonumber(L('ButtonConfirmSizeY')))
+    autoButtonSize = v2(tonumber(L('ButtonAutoSizeX')), tonumber(L('ButtonAutoSizeY')))
+    confirmButton.layout = myui.createTextButton(confirmButton, okayText, 'normal', 'confirmButton', {}, confirmButtonSize, confirmMenu)
+    autoButton.layout = myui.createTextButton(autoButton, L('MenuDistribute'), 'normal', 'autoButton', {}, autoButtonSize, autoDistribute)
     if debugMode then
         autoButton.layout.props.visible = false
     end
