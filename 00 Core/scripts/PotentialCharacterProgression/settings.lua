@@ -64,6 +64,45 @@ I.Settings.registerPage {
 
 -- Basic settings
 
+-- Something stupid to get around I.Settings.updateRendererArgument() replacing the entire table
+local dependentArguments = {
+    AttributeCap = {
+        integer = true,
+        min = 0,
+        disabled = modSettings.basic:get('UniqueAttributeCap')
+    },
+    UniqueAttributeCapValues = {
+        integer = true,
+        min = 0,
+        max = nil,
+        disabled = not modSettings.basic:get('UniqueAttributeCap')
+    },
+    RetroactiveStartHealth = {
+        disabled = not modSettings.health:get('RetroactiveHealth')
+    },
+    GradualRetroactiveHealth = {
+        disabled = not modSettings.health:get('RetroactiveHealth')
+    },
+    GradualRetroactiveHealthIncrement = {
+        integer = true,
+        min = 1,
+        max = nil,
+        disabled = not (modSettings.health:get('RetroactiveHealth') and modSettings.health:get('GradualRetroactiveHealth'))
+    },
+    CustomHealthCoefficients = {
+        integer = false,
+        min = nil,
+        max = nil,
+        disabled = not modSettings.health:get('CustomHealth')
+    },
+    CustomGainMultiplier = {
+        integer = false,
+        min = 0,
+        max = nil,
+        disabled = not modSettings.health:get('CustomHealth')
+    }
+}
+
 I.Settings.registerGroup {
     key = 'SettingsPlayer' .. info.name,
     page = 'Page' .. info.name,
@@ -91,11 +130,7 @@ I.Settings.registerGroup {
             name = 'AttributeCapName',
             description = 'AttributeCapDesc',
             default = 100,
-            argument = {
-                integer = true,
-                min = 0,
-                disabled = modSettings.basic:get('UniqueAttributeCap')
-            }
+            argument = dependentArguments.AttributeCap
         },
         {
             key = 'UniqueAttributeCap',
@@ -120,12 +155,7 @@ I.Settings.registerGroup {
                     luck = 100
                 }, 
                 100),
-            argument = {
-                integer = true,
-                min = 0,
-                max = nil,
-                disabled = not modSettings.basic:get('UniqueAttributeCap')
-            }
+            argument = dependentArguments.UniqueAttributeCapValues
         }
     }
 }
@@ -154,9 +184,23 @@ I.Settings.registerGroup {
             name = 'RetroactiveStartHealthName',
             description = 'RetroactiveStartHealthDesc',
             default = false,
-            argument = {
-                disabled = not modSettings.health:get('RetroactiveHealth')
-            }
+            argument = dependentArguments.RetroactiveStartHealth
+        },
+        {
+            key = 'GradualRetroactiveHealth',
+            renderer = 'checkbox',
+            name = 'GradualRetroactiveHealthName',
+            description = 'GradualRetroactiveHealthDesc',
+            default = false,
+            argument = dependentArguments.GradualRetroactiveHealth
+        },
+        {
+            key = 'GradualRetroactiveHealthIncrement',
+            renderer = 'number',
+            name = 'GradualRetroactiveHealthIncrementName',
+            description = 'GradualRetroactiveHealthIncrementDesc',
+            default = 5,
+            argument = dependentArguments.GradualRetroactiveHealthIncrement
         },
         {
             key = 'CustomHealth',
@@ -182,12 +226,7 @@ I.Settings.registerGroup {
                     luck = 0
                 }, 
                 0),
-            argument = {
-                integer = false,
-                min = nil,
-                max = nil,
-                disabled = not modSettings.health:get('CustomHealth')
-            }
+            argument = dependentArguments.CustomHealthCoefficients
         },
         {
             key = 'CustomGainMultiplier',
@@ -195,12 +234,7 @@ I.Settings.registerGroup {
             name = 'CustomGainMultiplierName',
             description = 'CustomGainMultiplierDesc',
             default = 0.1,
-            argument = {
-                integer = false,
-                min = 0,
-                max = nil,
-                disabled = not modSettings.health:get('CustomHealth')
-            }
+            argument = dependentArguments.CustomGainMultiplier
         }
     }
 }
@@ -339,33 +373,33 @@ local skillSettings = {
 }
 
 local skillDefaults = {
-    acrobatics  = {strength = 3, intelligence = 0, willpower = 0, agility = 1, speed = 2, endurance = 1, personality = 0, luck = 0},
-    armorer     = {strength = 4, intelligence = 0, willpower = 0, agility = 0, speed = 0, endurance = 3, personality = 0, luck = 0},
-    axe         = {strength = 4, intelligence = 0, willpower = 0, agility = 1, speed = 0, endurance = 2, personality = 0, luck = 0},
-    bluntweapon = {strength = 3, intelligence = 0, willpower = 2, agility = 1, speed = 1, endurance = 0, personality = 0, luck = 0},
-    longblade   = {strength = 3, intelligence = 0, willpower = 0, agility = 2, speed = 1, endurance = 1, personality = 0, luck = 0},
-    alchemy     = {strength = 0, intelligence = 5, willpower = 0, agility = 0, speed = 0, endurance = 1, personality = 1, luck = 0},
-    conjuration = {strength = 0, intelligence = 4, willpower = 1, agility = 0, speed = 0, endurance = 0, personality = 2, luck = 0},
-    enchant     = {strength = 0, intelligence = 6, willpower = 0, agility = 0, speed = 0, endurance = 0, personality = 1, luck = 0},
-    security    = {strength = 0, intelligence = 3, willpower = 0, agility = 3, speed = 0, endurance = 0, personality = 1, luck = 0},
-    alteration  = {strength = 0, intelligence = 2, willpower = 5, agility = 0, speed = 0, endurance = 0, personality = 0, luck = 0},
-    destruction = {strength = 0, intelligence = 1, willpower = 6, agility = 0, speed = 0, endurance = 0, personality = 0, luck = 0},
-    mysticism   = {strength = 0, intelligence = 2, willpower = 4, agility = 0, speed = 0, endurance = 0, personality = 1, luck = 0},
-    restoration = {strength = 0, intelligence = 1, willpower = 4, agility = 0, speed = 0, endurance = 0, personality = 2, luck = 0},
-    block       = {strength = 0, intelligence = 0, willpower = 0, agility = 3, speed = 2, endurance = 2, personality = 0, luck = 0},
-    lightarmor  = {strength = 0, intelligence = 0, willpower = 1, agility = 3, speed = 3, endurance = 0, personality = 0, luck = 0},
-    marksman    = {strength = 2, intelligence = 1, willpower = 0, agility = 4, speed = 0, endurance = 0, personality = 0, luck = 0},
-    sneak       = {strength = 0, intelligence = 0, willpower = 0, agility = 4, speed = 2, endurance = 0, personality = 1, luck = 0},
-    athletics   = {strength = 0, intelligence = 0, willpower = 1, agility = 0, speed = 4, endurance = 2, personality = 0, luck = 0},
-    handtohand  = {strength = 1, intelligence = 0, willpower = 0, agility = 1, speed = 4, endurance = 1, personality = 0, luck = 0},
-    shortblade  = {strength = 1, intelligence = 0, willpower = 0, agility = 2, speed = 4, endurance = 0, personality = 0, luck = 0},
-    unarmored   = {strength = 0, intelligence = 0, willpower = 2, agility = 0, speed = 3, endurance = 2, personality = 0, luck = 0},
-    heavyarmor  = {strength = 3, intelligence = 0, willpower = 0, agility = 0, speed = 0, endurance = 4, personality = 0, luck = 0},
-    mediumarmor = {strength = 2, intelligence = 0, willpower = 0, agility = 1, speed = 0, endurance = 4, personality = 0, luck = 0},
-    spear       = {strength = 1, intelligence = 0, willpower = 0, agility = 1, speed = 1, endurance = 4, personality = 0, luck = 0},
-    illusion    = {strength = 0, intelligence = 1, willpower = 1, agility = 0, speed = 0, endurance = 0, personality = 5, luck = 0},
-    mercantile  = {strength = 0, intelligence = 1, willpower = 0, agility = 0, speed = 0, endurance = 0, personality = 6, luck = 0},
-    speechcraft = {strength = 0, intelligence = 0, willpower = 0, agility = 0, speed = 0, endurance = 0, personality = 7, luck = 0},
+    acrobatics  = {strength = 3, intelligence = 0, willpower = 0, agility = 1, speed = 2, endurance = 1, personality = 0, luck = 1},
+    armorer     = {strength = 4, intelligence = 0, willpower = 0, agility = 0, speed = 0, endurance = 3, personality = 0, luck = 1},
+    axe         = {strength = 4, intelligence = 0, willpower = 0, agility = 1, speed = 0, endurance = 2, personality = 0, luck = 1},
+    bluntweapon = {strength = 3, intelligence = 0, willpower = 2, agility = 1, speed = 1, endurance = 0, personality = 0, luck = 1},
+    longblade   = {strength = 3, intelligence = 0, willpower = 0, agility = 2, speed = 1, endurance = 1, personality = 0, luck = 1},
+    alchemy     = {strength = 0, intelligence = 5, willpower = 0, agility = 0, speed = 0, endurance = 1, personality = 1, luck = 1},
+    conjuration = {strength = 0, intelligence = 4, willpower = 1, agility = 0, speed = 0, endurance = 0, personality = 2, luck = 1},
+    enchant     = {strength = 0, intelligence = 6, willpower = 0, agility = 0, speed = 0, endurance = 0, personality = 1, luck = 1},
+    security    = {strength = 0, intelligence = 3, willpower = 0, agility = 3, speed = 0, endurance = 0, personality = 1, luck = 1},
+    alteration  = {strength = 0, intelligence = 2, willpower = 5, agility = 0, speed = 0, endurance = 0, personality = 0, luck = 1},
+    destruction = {strength = 0, intelligence = 1, willpower = 6, agility = 0, speed = 0, endurance = 0, personality = 0, luck = 1},
+    mysticism   = {strength = 0, intelligence = 2, willpower = 4, agility = 0, speed = 0, endurance = 0, personality = 1, luck = 1},
+    restoration = {strength = 0, intelligence = 1, willpower = 4, agility = 0, speed = 0, endurance = 0, personality = 2, luck = 1},
+    block       = {strength = 0, intelligence = 0, willpower = 0, agility = 3, speed = 2, endurance = 2, personality = 0, luck = 1},
+    lightarmor  = {strength = 0, intelligence = 0, willpower = 1, agility = 3, speed = 3, endurance = 0, personality = 0, luck = 1},
+    marksman    = {strength = 2, intelligence = 1, willpower = 0, agility = 4, speed = 0, endurance = 0, personality = 0, luck = 1},
+    sneak       = {strength = 0, intelligence = 0, willpower = 0, agility = 4, speed = 2, endurance = 0, personality = 1, luck = 1},
+    athletics   = {strength = 0, intelligence = 0, willpower = 1, agility = 0, speed = 4, endurance = 2, personality = 0, luck = 1},
+    handtohand  = {strength = 1, intelligence = 0, willpower = 0, agility = 1, speed = 4, endurance = 1, personality = 0, luck = 1},
+    shortblade  = {strength = 1, intelligence = 0, willpower = 0, agility = 2, speed = 4, endurance = 0, personality = 0, luck = 1},
+    unarmored   = {strength = 0, intelligence = 0, willpower = 2, agility = 0, speed = 3, endurance = 2, personality = 0, luck = 1},
+    heavyarmor  = {strength = 3, intelligence = 0, willpower = 0, agility = 0, speed = 0, endurance = 4, personality = 0, luck = 1},
+    mediumarmor = {strength = 2, intelligence = 0, willpower = 0, agility = 1, speed = 0, endurance = 4, personality = 0, luck = 1},
+    spear       = {strength = 1, intelligence = 0, willpower = 0, agility = 1, speed = 1, endurance = 4, personality = 0, luck = 1},
+    illusion    = {strength = 0, intelligence = 1, willpower = 1, agility = 0, speed = 0, endurance = 0, personality = 5, luck = 1},
+    mercantile  = {strength = 0, intelligence = 1, willpower = 0, agility = 0, speed = 0, endurance = 0, personality = 6, luck = 1},
+    speechcraft = {strength = 0, intelligence = 0, willpower = 0, agility = 0, speed = 0, endurance = 0, personality = 7, luck = 1},
 }
 
 local skillList = {}
@@ -377,12 +411,13 @@ end
 table.sort(skillList, sortAlphabetical)
 
 for _, skillId in pairs(skillList) do
+    dependentArguments[capital(skillId) .. 'Attributes'] = {integer = false, min = 0, max = nil, disabled = not modSettings.skill:get('CustomSkillAttributes')}
     table.insert(skillSettings, {
         key = capital(skillId) .. 'Attributes',
         renderer = info.name .. 'SkillAttributes',
         name = core.getGMST('sSkill' .. capital(skillId)) .. '  ',
         default = populateAttributes(skillDefaults[skillId] or {}, 0),
-        argument = {integer = false, min = 0, max = nil, disabled = not modSettings.skill:get('CustomSkillAttributes')}
+        argument = dependentArguments[capital(skillId) .. 'Attributes']
     })
 end
 
@@ -418,29 +453,35 @@ I.Settings.registerGroup {
 
 -- Dependent Settings
 
-local function dependentSetting(dependentKey, key, value, section, sectionKey, changedKey)
-    if changedKey == key then
-        local disabled = true
-        if section:get(key) == value then
-            disabled = false
+local function dependentSetting(dependentKeys, keyValues, section, sectionKey)
+    local disabled = false
+    for key, value in pairs(keyValues) do
+        if section:get(key) ~= value then
+            disabled = true
         end
-        I.Settings.updateRendererArgument(sectionKey, dependentKey, {disabled = disabled})
+    end
+    for _, dependentKey in pairs(dependentKeys) do
+        local argument = dependentArguments[dependentKey]
+        argument.disabled = disabled
+        I.Settings.updateRendererArgument(sectionKey, dependentKey, argument)
     end
 end
 
 modSettings.basic:subscribe(async:callback(function(section, key)
-    dependentSetting('AttributeCap', 'UniqueAttributeCap', false, modSettings.basic, 'SettingsPlayer' .. info.name, key)
-    dependentSetting('UniqueAttributeCapValues', 'UniqueAttributeCap', true, modSettings.basic, 'SettingsPlayer' .. info.name, key)
+    dependentSetting({'AttributeCap'}, {UniqueAttributeCap = false}, modSettings.basic, 'SettingsPlayer' .. info.name)
+    dependentSetting({'UniqueAttributeCapValues'}, {UniqueAttributeCap = true}, modSettings.basic, 'SettingsPlayer' .. info.name)
 end))
 
 modSettings.health:subscribe(async:callback(function(section, key)
-    dependentSetting('RetroactiveStartHealth', 'RetroactiveHealth', true, modSettings.health, 'SettingsPlayer' .. info.name .. 'Health', key)
-    dependentSetting('CustomHealthCoefficients', 'CustomHealth', true, modSettings.health, 'SettingsPlayer' .. info.name .. 'Health', key)
-    dependentSetting('CustomGainMultiplier', 'CustomHealth', true, modSettings.health, 'SettingsPlayer' .. info.name .. 'Health', key)
+    dependentSetting({'RetroactiveStartHealth', 'GradualRetroactiveHealth'}, {RetroactiveHealth = true}, modSettings.health, 'SettingsPlayer' .. info.name .. 'Health')
+    dependentSetting({'GradualRetroactiveHealthIncrement'}, {RetroactiveHealth = true, GradualRetroactiveHealth = true}, modSettings.health, 'SettingsPlayer' .. info.name .. 'Health')
+    dependentSetting({'CustomHealthCoefficients', 'CustomGainMultiplier'}, {CustomHealth = true}, modSettings.health, 'SettingsPlayer' .. info.name .. 'Health')
 end))
 
 modSettings.skill:subscribe(async:callback(function(section, key)
+    local dependentKeys = {}
     for skillId, _ in pairs(types.NPC.stats.skills) do
-        dependentSetting(capital(skillId) .. 'Attributes', 'CustomSkillAttributes', true, modSettings.skill, 'SettingsPlayer' .. info.name .. 'Skill', key)
+        table.insert(dependentKeys, capital(skillId) .. 'Attributes')
     end
+    dependentSetting(dependentKeys, {CustomSkillAttributes = true}, modSettings.skill, 'SettingsPlayer' .. info.name .. 'Skill')
 end))
