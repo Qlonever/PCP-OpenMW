@@ -26,6 +26,12 @@ RetroactiveHealthDesc: "If enabled, raising attributes will affect the health ga
 RetroactiveStartHealthName: "Retroactive Starting Health"
 RetroactiveStartHealthDesc: "If this and 'Retroactive Health Gain' are enabled, raising attributes will affect the initial health from character creation."
 
+GradualRetroactiveHealthName: "Gradual Retroactive Health Gain"
+GradualRetroactiveHealthDesc: "If this and 'Retroactive Health Gain' are enabled, maximum health will be calculated as if relevant attributes had been raised to their current value as fast as possible by a specified increment each level."
+
+GradualRetroactiveHealthIncrementName: "Gradual Retroactive Health Increment"
+GradualRetroactiveHealthIncrementDesc: "The increment used in calculations when 'Gradual Retroactive Health Gain' is enabled."
+
 CustomHealthName: "Custom Health Calculation"
 CustomHealthDesc: "If enabled, health will be calculated using a weighted average of attribute values, instead of just endurance and strength."
 

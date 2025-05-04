@@ -163,6 +163,8 @@ end
 local function updateHealthSettings()
     healthSettings.isRetroactive = modSettings.health:get('RetroactiveHealth')
     healthSettings.isStartRetroactive = healthSettings.isRetroactive and modSettings.health:get('RetroactiveStartHealth')
+    healthSettings.isGradual = healthSettings.isRetroactive and modSettings.health:get('GradualRetroactiveHealth')
+    healthSettings.gradualIncrement = modSettings.health:get('GradualRetroactiveHealthIncrement')
     healthSettings.isCustom = modSettings.health:get('CustomHealth')
     healthSettings.customCoefficients = modSettings.health:get('CustomHealthCoefficients')
     healthSettings.customGainMult = modSettings.health:get('CustomGainMultiplier')
@@ -230,12 +232,25 @@ local function calculateStartHealth(isRetroactive, isCustom)
     end
 end
 
--- Given attribute values, calculate health gained from one level up
-local function calculateLevelHealth(attributes)
+-- Given attribute values, calculate health gained from a specified number of level-ups
+local function calculateLevelHealth(attributes, gainLevels)
+    local levelMultiplier = gainLevels
+    if healthSettings.isGradual then
+        -- Use a triangular number to calculate the growing attribute totals for gradual retroactive health
+        local totalledAttributes = attributes
+        for attributeId, value in pairs(attributes) do
+            local startValue = value - attributeData[attributeId].ups
+            local growingLevels = math.min(math.ceil(attributeData[attributeId].ups / healthSettings.gradualIncrement), gainLevels)
+            local difference = growingLevels * healthSettings.gradualIncrement - math.min(growingLevels * healthSettings.gradualIncrement, attributeData[attributeId].ups)
+            totalledAttributes[attributeId] = growingLevels * (healthSettings.gradualIncrement * (growingLevels + 1) / 2 + startValue) - difference + (gainLevels - growingLevels) * value
+        end   
+        attributes = totalledAttributes
+        levelMultiplier = 1
+    end
     if healthSettings.isCustom then
-        return calculateWeightedAverage(attributes) * healthSettings.customGainMult
+        return calculateWeightedAverage(attributes) * healthSettings.customGainMult * levelMultiplier
     else
-        return attributes.endurance * levelHealthMult
+        return attributes.endurance * levelHealthMult * levelMultiplier
     end
 end
 
@@ -245,7 +260,7 @@ local function calculateHealthIncrease(attributes, isRetroactive, isStartRetroac
         attributes = getBaseAttributes()
     end
 
-    local levelHealth = calculateLevelHealth(attributes) * gainLevels
+    local levelHealth = calculateLevelHealth(attributes, gainLevels)
     local startHealth
     local base
 
