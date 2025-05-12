@@ -113,15 +113,15 @@ local tooltip
 
 -- Tooltip layouts/functions
 
-local attributeSettings = {
-    strength = {desc = 'sStrDesc', size = v2(tonumber(L('TooltipStrengthSizeX')), tonumber(L('TooltipStrengthSizeY')))},
-    intelligence = {desc = 'sIntDesc', size = v2(tonumber(L('TooltipIntelligenceSizeX')), tonumber(L('TooltipIntelligenceSizeY')))},
-    willpower = {desc = 'sWilDesc', size = v2(tonumber(L('TooltipWillpowerSizeX')), tonumber(L('TooltipWillpowerSizeY')))},
-    agility = {desc = 'sAgiDesc', size = v2(tonumber(L('TooltipAgilitySizeX')), tonumber(L('TooltipAgilitySizeY')))},
-    speed = {desc = 'sSpdDesc', size = v2(tonumber(L('TooltipSpeedSizeX')), tonumber(L('TooltipSpeedSizeY')))},
-    endurance = {desc = 'sEndDesc', size = v2(tonumber(L('TooltipEnduranceSizeX')), tonumber(L('TooltipEnduranceSizeY')))},
-    personality = {desc = 'sPerDesc', size = v2(tonumber(L('TooltipPersonalitySizeX')), tonumber(L('TooltipPersonalitySizeY')))},
-    luck = {desc = 'sLucDesc', size = v2(tonumber(L('TooltipLuckSizeX')), tonumber(L('TooltipLuckSizeY')))}
+local tooltipSizes = {
+    strength = v2(tonumber(L('TooltipStrengthSizeX')), tonumber(L('TooltipStrengthSizeY'))),
+    intelligence = v2(tonumber(L('TooltipIntelligenceSizeX')), tonumber(L('TooltipIntelligenceSizeY'))),
+    willpower = v2(tonumber(L('TooltipWillpowerSizeX')), tonumber(L('TooltipWillpowerSizeY'))),
+    agility = v2(tonumber(L('TooltipAgilitySizeX')), tonumber(L('TooltipAgilitySizeY'))),
+    speed = v2(tonumber(L('TooltipSpeedSizeX')), tonumber(L('TooltipSpeedSizeY'))),
+    endurance = v2(tonumber(L('TooltipEnduranceSizeX')), tonumber(L('TooltipEnduranceSizeY'))),
+    personality = v2(tonumber(L('TooltipPersonalitySizeX')), tonumber(L('TooltipPersonalitySizeY'))),
+    luck = v2(tonumber(L('TooltipLuckSizeX')), tonumber(L('TooltipLuckSizeY')))
 }
 
 local tooltipLayout = {
@@ -208,17 +208,21 @@ local levelTooltipFlex = {
 }
 
 local function createAttributeTooltip(attributeId)
-    if attributeSettings[attributeId] then
-        attributeTooltipFlex.props.visible = true
-        attributeTooltipFlex.content.headingFlex.content.icon.props.resource = resources[attributeId]
-        attributeTooltipFlex.content.headingFlex.content.name.props.text = core.getGMST('sAttribute' .. capital(attributeId))
-        attributeTooltipFlex.content.description.props.text = core.getGMST(attributeSettings[attributeId].desc)
-        attributeTooltipFlex.content.description.props.size = attributeSettings[attributeId].size
-        tooltip.layout.content.padding.content = ui.content{attributeTooltipFlex}
-        tooltip.layout.props.visible = true
+    attributeTooltipFlex.content.headingFlex.content.name.props.text = core.stats.Attribute.record(attributeId).name
+    attributeTooltipFlex.content.description.props.text = core.stats.Attribute.record(attributeId).description
+    if tooltipSizes[attributeId] then
+        attributeTooltipFlex.content.description.props.size = tooltipSizes[attributeId]
     else
-        attributeTooltipFlex.props.visible = false
+        attributeTooltipFlex.content.description.props.size = v2(400, 64)
     end
+    if resources[attributeId] then
+        attributeTooltipFlex.content.headingFlex.content.icon.props.resource = resources[attributeId]
+        attributeTooltipFlex.content.headingFlex.content.icon.props.visible = true
+    else
+        attributeTooltipFlex.content.headingFlex.content.icon.props.visible = false
+    end
+    tooltip.layout.content.padding.content = ui.content{attributeTooltipFlex}
+    tooltip.layout.props.visible = true
 end
 
 local function createExpTooltip()
@@ -643,15 +647,14 @@ local function sizeRow(layout, size)
 end
 
 -- UI creation function called from the main script
-local function createMenu(levelUpData, orderedAttributeData, experience)
+local function createMenu(levelUpData, attributeData, experience)
     uiExperience = experience
     
     uiDistributed = false
 
     -- Can't read this when the script first loads if the player doesn't have a class yet
-    if not playerClassRecord then
-        playerClassRecord = Player.classes.record(Player.record(self).class)
-    end
+    -- Also accounts for the player changing their class mid-session with console commands
+    playerClassRecord = Player.classes.record(Player.record(self).class)
 
     -- Set these at menu creation so settings can update mid-session
 
@@ -690,9 +693,9 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
     }
 
     -- Populate UI columns
-    for _, orderedAttribute in ipairs(orderedAttributeData) do
-        uiAttributes[orderedAttribute.id] = {}
-        local attributeId = orderedAttribute.id
+    for i, attributeRecord in ipairs(core.stats.Attribute.records) do
+        uiAttributes[attributeRecord.id] = {}
+        local attributeId = attributeRecord.id
         local attribute = uiAttributes[attributeId]
         if attribute.isFavored == nil then
             attribute.isFavored = contains(playerClassRecord.attributes, attributeId)
@@ -702,8 +705,7 @@ local function createMenu(levelUpData, orderedAttributeData, experience)
         end
         attribute.experience = 0
         attribute.base = Player.stats.attributes[attributeId](self).base
-        orderedAttribute.potential = math.min(orderedAttribute.potential, attributeCaps[attributeId] - attribute.base)
-        attribute.potential = orderedAttribute.potential
+        attribute.potential = math.min(attributeData[attributeRecord.id].potential, attributeCaps[attributeId] - attribute.base)
         attribute.ups = 0
 
         -- EXP spent indicator

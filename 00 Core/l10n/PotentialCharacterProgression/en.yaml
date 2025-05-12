@@ -27,10 +27,10 @@ RetroactiveStartHealthName: "Retroactive Starting Health"
 RetroactiveStartHealthDesc: "If this and 'Retroactive Health Gain' are enabled, raising attributes will affect the initial health from character creation."
 
 GradualRetroactiveHealthName: "Gradual Retroactive Health Gain"
-GradualRetroactiveHealthDesc: "If this and 'Retroactive Health Gain' are enabled, maximum health will be calculated as if relevant attributes had been raised to their current value as fast as possible by a specified increment each level."
+GradualRetroactiveHealthDesc: "If this and 'Retroactive Health Gain' are enabled, health gain will be calculated as if relevant attributes had been raised to their current value as early as possible."
 
 GradualRetroactiveHealthIncrementName: "Gradual Retroactive Health Increment"
-GradualRetroactiveHealthIncrementDesc: "The increment used in calculations when 'Gradual Retroactive Health Gain' is enabled."
+GradualRetroactiveHealthIncrementDesc: "Calculations for 'Gradual Retroactive Health Gain' will assume that attributes were raised by this value each level."
 
 CustomHealthName: "Custom Health Calculation"
 CustomHealthDesc: "If enabled, health will be calculated using a weighted average of attribute values, instead of just endurance and strength."
@@ -78,7 +78,12 @@ LevelProgressPerMajorSkillName: "Level Progress Per Major Skill Increase"
 SettingsSkillName: "Skill Settings"
 
 CustomSkillAttributesName: "Custom Skill-Attribute Assignment"
-CustomSkillAttributesDesc: "If enabled, you can change which attributes' potential each skill will contribute to. Total potential gained from a skill increase will remain the same, but it will be split between attributes by the adjustable ratios below."
+CustomSkillAttributesDesc: "If enabled, skills can be configured to contribute towards different attributes' potential. Total potential gained from a skill increase will remain the same, but it will be divided between attributes by the adjustable ratios below."
+
+SettingsDataName: "Data Settings"
+
+ClearDataName: "Clear Data"
+ClearDataDesc: "Clicking this button will reset the data used to track character progression, as if this mod had just been added to the current save file. This should only be used in niche cases, like redoing character creation in an existing save."
 
 SettingsDebugName: "Debug Settings"
 
@@ -89,13 +94,13 @@ StartUp: "Your potential has started to develop. Press {keybind} at any time to 
 
 VersionOld: "[Potential Character Progression]: You are using an older mod version than the one previously used on this save file. Settings and character progression data may be lost if you continue without updating."
 
-SaveVersionNew: "[Potential Character Progression]: You should not see this message. If you somehow do, report it to the mod author."
-SaveVersionOld: "[Potential Character Progression]: You are using an older mod version than the one previously used on this save file. Character progression data may be lost if you continue without updating."
+SaveVersionNew: "[Potential Character Progression]: You have a newer mod version than the one previously used on this save file. Certain features may not work."
+SaveVersionOld: "[Potential Character Progression]: You have an older mod version than the one previously used on this save file. Character progression data may be lost."
 
 SettingsVersionNew: "[Potential Character Progression]: The following settings have changed since the previous version used by this save, and need to be set again:"
-SettingsVersionOld: "[Potential Character Progression]: You are using an older mod version than the one previously used on this save file. Your settings may be lost if you continue without updating."
+SettingsVersionOld: "[Potential Character Progression]: You have an older mod version than the one previously used on this save file. Certain settings may not have been carried over."
 
-UpdateOpenMW: "[Potential Character Progression]: Your OpenMW version is too old for this mod. Use a release newer than 0.48 or the latest development build."
+UpdateOpenMW: "[Potential Character Progression]: This mod requires OpenMW version 0.49 or newer. The version you are using is out of date."
 
 MenuExperience: "EXP: "
 

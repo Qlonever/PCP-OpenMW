@@ -46,16 +46,11 @@ local modSettings = {
     basic = storage.playerSection('SettingsPlayer' .. info.name),
     health = storage.playerSection('SettingsPlayer' .. info.name .. 'Health'),
     balance = storage.playerSection('SettingsPlayer' .. info.name .. 'Balance'),
-    skill = storage.playerSection('SettingsPlayer' .. info.name .. 'Skill')
+    skill = storage.playerSection('SettingsPlayer' .. info.name .. 'Skill'),
+    data = storage.playerSection('SettingsPlayer' .. info.name .. 'Data')
 }
 
-local healthSettings = {
-    isRetroactive = nil,
-    isStartRetroactive = nil,
-    isCustom = nil,
-    customCoefficients = nil,
-    customGainMult = nil
-}
+local healthSettings = {}
 
 -- Game settings
 
@@ -91,23 +86,23 @@ local attributeData = {}
 local skillData = {}
 
 local function setAttributesValue(var, value)
-    for attributeId, attribute in pairs(playerAttributes) do
-        attributeData[attributeId][var] = value
+    for i, attributeRecord in ipairs(core.stats.Attribute.records) do
+        attributeData[attributeRecord.id][var] = value
     end
 end
 
 local function setSkillsValue(var, value)
-    for skillId, skill in pairs(playerSkills) do
-        skillData[skillId][var] = value
+    for i, skillRecord in ipairs(core.stats.Skill.records) do
+        skillData[skillRecord.id][var] = value
     end
 end
 
-for attributeId, attribute in pairs(playerAttributes) do
-    attributeData[attributeId] = {}
+for i, attributeRecord in ipairs(core.stats.Attribute.records) do
+    attributeData[attributeRecord.id] = {}
 end
 
-for skillId, skill in pairs(playerSkills) do
-    skillData[skillId] = {}
+for i, skillRecord in ipairs(core.stats.Skill.records) do
+    skillData[skillRecord.id] = {}
 end
 
 setAttributesValue('ups', 0)
@@ -146,10 +141,39 @@ local function infoDump()
         print(skillId .. ' increases last level: ' .. skill.upsLastLevels)
         print(skillId .. ' highest value: ' .. skill.peak)
     end
-    print('total skill increases this level: ' .. totalSkillUpsCurLevel)
-    print('level-ups: ' .. levelUps)
-    print('experience: ' .. experience)
+    print('Total skill increases this level: ' .. totalSkillUpsCurLevel)
+    print('Level-ups: ' .. levelUps)
+    print('Experience: ' .. experience)
+    print('Total health gained: ' .. totalHealthGained)
 end
+
+
+
+
+
+
+
+-- Data management -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+-- Completely reset data for the character, as if this mod was just installed
+-- Menu scripts can't send player events, so use storage section subscriptions
+modSettings.data:subscribe(async:callback(function(section, key)
+    if key == 'ClearData' and modSettings.data:get(key) ~= 0 then
+        setAttributesValue('ups', 0)
+        setAttributesValue('potential', 0)
+
+        setSkillsValue('ups', 0)
+        setSkillsValue('upsCurLevel', 0)
+        setSkillsValue('upsLastLevels', 0)
+        setSkillsValue('peak', 0)
+
+        levelUps = 0
+        experience = 0
+        totalHealthGained = 0
+        totalSkillUpsCurLevel = 0
+        isCharGenFinished = false
+    end
+end))
 
 
 
@@ -236,7 +260,8 @@ end
 local function calculateLevelHealth(attributes, gainLevels)
     local levelMultiplier = gainLevels
     if healthSettings.isGradual then
-        -- Use a triangular number to calculate the growing attribute totals for gradual retroactive health
+        -- Use a triangular number (n * (n + 1) / 2) to calculate the growing attribute totals for gradual retroactive health
+        -- These lines are overly-long but probably can't be simplified or meaningfully broken down further
         local totalledAttributes = attributes
         for attributeId, value in pairs(attributes) do
             local startValue = value - attributeData[attributeId].ups
@@ -254,22 +279,19 @@ local function calculateLevelHealth(attributes, gainLevels)
     end
 end
 
--- Given attribute values, calculate health gain and optionally starting health
+-- Given attribute values and a number of level-ups, calculate health gain and optionally starting health
 local function calculateHealthIncrease(attributes, isRetroactive, isStartRetroactive, gainLevels)
     if not attributes then
         attributes = getBaseAttributes()
     end
 
     local levelHealth = calculateLevelHealth(attributes, gainLevels)
-    local startHealth
-    local base
+    local startHealth = 0
+    local base = 0
 
     if isRetroactive then
         startHealth = calculateStartHealth(isStartRetroactive, healthSettings.isCustom)
         base = calculateStartHealth(false, false) + totalHealthGained
-    else
-        startHealth = 0
-        base = 0
     end
 
     increaseHealth(startHealth + levelHealth - base)
@@ -337,15 +359,7 @@ local function showMenu()
         end
     end
 
-    local orderedAttributeData = {}
-
-    for attributeId, attribute in pairs(attributeData) do
-        orderedAttributeData[attributeId] = {potential = attribute.potential}
-    end
-
-    orderedAttributeData = mwData.orderAttributes(orderedAttributeData)
-
-    PLui.createMenu(levelUpData, orderedAttributeData, experience, finishMenu)
+    PLui.createMenu(levelUpData, attributeData, experience)
 end
 
 local function hideMenu()
@@ -474,8 +488,8 @@ local function finishCharGen()
         calculateHealthIncrease(getStartingAttributes(), true, false, 0)
     end
 
-    for skillId, skill in pairs(playerSkills) do
-        skillData[skillId].peak = skill(self).base
+    for i, skillRecord in ipairs(core.stats.Skill.records) do
+        skillData[skillRecord.id].peak = playerSkills[skillRecord.id](self).base
     end
     totalSkillUpsCurLevel = playerStats.level(self).progress % skillUpsPerLevel
     local keybind = input.getKeyName(modSettings.basic:get('MenuKey'))
@@ -525,40 +539,40 @@ local settingsChanges = {
 -- Save/load handlers
 
 local function onLoad(data)
-    -- I forgot to include this in 1.0.0
+    -- Include values in save data to track breaking changes
+    -- Settings version was accidentally left out of 1.0.0
     data.settingsVersion = data.settingsVersion or 1
+    if info.settingsVersion > (data.settingsVersion) then
+        local changeText = ''
+        for i = data.settingsVersion + 1, info.settingsVersion, 1 do
+            for _, settingKey in pairs(settingsChanges[i]) do
+                changeText = changeText .. '\n' .. L(settingKey .. 'Name')
+            end
+        end
+        if changeText ~= '' then
+            ui.showMessage(L('SettingsVersionNew') .. changeText, {showInDialogue = false})
+            print(L('SettingsVersionNew') .. changeText) 
+        end
+    elseif info.settingsVersion < (data.settingsVersion) then
+        ui.showMessage(L('SettingsVersionOld'), {showInDialogue = false})
+        print(L('SettingsVersionOld'))
+    end
+
     if info.saveVersion > data.saveVersion then
         ui.showMessage(L('SaveVersionNew'), {showInDialogue = false})
         print(L('SaveVersionNew'))
     elseif info.saveVersion < data.saveVersion then
         ui.showMessage(L('SaveVersionOld'), {showInDialogue = false})
         print(L('SaveVersionOld'))
-    else
-        if info.settingsVersion > (data.settingsVersion) then
-            local changeText = ''
-            for i = data.settingsVersion + 1, info.settingsVersion, 1 do
-                for _, settingKey in pairs(settingsChanges[i]) do
-                    changeText = changeText .. '\n' .. L(settingKey .. 'Name')
-                end
-            end
-            if changeText ~= '' then
-                ui.showMessage(L('SettingsVersionNew') .. changeText, {showInDialogue = false})
-                print(L('SettingsVersionNew') .. changeText) 
-            end
-            --ui.showMessage(L('SettingsVersionNew'), {showInDialogue = false})
-            --print(L('SettingsVersionNew'))
-        elseif info.settingsVersion < (data.settingsVersion) then
-            ui.showMessage(L('SettingsVersionOld'), {showInDialogue = false})
-            print(L('SettingsVersionOld'))
-        end
-        skillData = data.skillData
-        attributeData = data.attributeData
-        levelUps = data.levelUps
-        experience = data.experience
-        totalHealthGained = data.totalHealthGained
-        totalSkillUpsCurLevel = data.totalSkillUpsCurLevel
     end
-        isCharGenFinished = true
+
+    skillData = data.skillData or skillData
+    attributeData = data.attributeData or attributeData
+    levelUps = data.levelUps or levelUps
+    experience = data.experience or experience
+    totalHealthGained = data.totalHealthGained or totalHealthGained
+    totalSkillUpsCurLevel = data.totalSkillUpsCurLevel or totalSkillUpsCurLevel
+    isCharGenFinished = true
 end
 
 local function onSave()

@@ -1,36 +1,6 @@
 -- Data from vanilla Morrowind used in this mod
 -- It is either impossible or unwise to gather this information from content files/openmw.cfg
 
--- Given a table with attribute IDs as keys, turn it into an indexed list ordered according to Morrowind's UI
--- Non-base attributes will be included in the list but not necessarily ordered
-local orderAttributes = function(attributeList)
-    local attributeOrder = {
-        strength = 1,
-        intelligence = 2,
-        willpower = 3,
-        agility = 4,
-        speed = 5,
-        endurance = 6,
-        personality = 7,
-        luck = 8
-    }
-    local attributeCount = 8
-
-    local orderedAttributeList = {}
-
-    for attributeId, data in pairs(attributeList) do
-        data.id = attributeId
-        if attributeOrder[attributeId] then
-            orderedAttributeList[attributeOrder[attributeId]] = data
-        else
-            attributeCount = attributeCount + 1
-            orderedAttributeList[attributeCount] = data
-        end
-    end
-
-    return orderedAttributeList
-end
-
 -- Maybe not the most logical way to organize this, but it makes things simpler at runtime
 --[[
     class = {
@@ -407,7 +377,6 @@ local classData = {
 }
 
 return {
-    orderAttributes = orderAttributes,
     classData = classData
 }
     

@@ -5,9 +5,6 @@ local I = require('openmw.interfaces')
 local input = require('openmw.input')
 local self = require('openmw.self')
 local storage = require('openmw.storage')
-local types = require('openmw.types')
-
-local Player = types.Player
 
 local info = require('scripts.PotentialCharacterProgression.info')
 local mwData = require('scripts.' .. info.name .. '.mwdata')
@@ -16,6 +13,16 @@ local modSettings = {
     basic = storage.playerSection('SettingsPlayer' .. info.name),
     health = storage.playerSection('SettingsPlayer' .. info.name .. 'Health'),
     skill = storage.playerSection('SettingsPlayer' .. info.name .. 'Skill')
+}
+
+-- This is only necessary because the basic section does not match the naming convention
+local groupNames = {
+    ['SettingsPlayer' .. info.name] = 'basic',
+    ['SettingsPlayer' .. info.name .. 'Health'] = 'health',
+    ['SettingsPlayer' .. info.name .. 'Balance'] = 'balance',
+    ['SettingsPlayer' .. info.name .. 'Skill'] = 'skill',
+    ['SettingsPlayer' .. info.name .. 'Data'] = 'data',
+    ['SettingsPlayer' .. info.name .. 'Debug'] = 'debug'
 }
 
 local function sortAlphabetical(a, b)
@@ -30,26 +37,11 @@ end
 -- If future OpenMW features allow for adding attributes, this will help account for them
 local function populateAttributes(defaults, value)
     local populatedAttributes = {}
-    for attributeId, _ in pairs(Player.stats.attributes) do
-        populatedAttributes[attributeId] = defaults[attributeId] or value
+    for i, attributeRecord in pairs(core.stats.Attribute.records) do
+        populatedAttributes[attributeRecord.id] = defaults[attributeRecord.id] or value
     end
     return populatedAttributes
 end
-        
-
--- Some custom settings renderers need to know what attributes there are
--- Can't access that information in menu scripts, so get it here and send it in an event
-local eventData = {
-    attributes = {}
-}
-
-for attributeId, _ in pairs(Player.stats.attributes) do
-    eventData.attributes[attributeId] = {}
-end
-
-eventData.attributes = mwData.orderAttributes(eventData.attributes)
-
-Player.sendMenuEvent(self, info.name .. 'RendererAttributes', eventData)
 
 input.registerTrigger {
     key = 'Menu' .. info.name,
@@ -404,13 +396,13 @@ local skillDefaults = {
 
 local skillList = {}
 
-for skillId, _ in pairs(Player.stats.skills) do
-    table.insert(skillList, skillId)
+for i, skillRecord in ipairs(core.stats.Skill.records) do
+    table.insert(skillList, skillRecord.id)
 end
 
 table.sort(skillList, sortAlphabetical)
 
-for _, skillId in pairs(skillList) do
+for i, skillId in ipairs(skillList) do
     dependentArguments[capital(skillId) .. 'Attributes'] = {integer = false, min = 0, max = nil, disabled = not modSettings.skill:get('CustomSkillAttributes')}
     table.insert(skillSettings, {
         key = capital(skillId) .. 'Attributes',
@@ -431,12 +423,35 @@ I.Settings.registerGroup {
     settings = skillSettings
 }
 
+-- Data settings
+
+I.Settings.registerGroup {
+    key = 'SettingsPlayer' .. info.name .. 'Data',
+    page = 'Page' .. info.name,
+    order = 5,
+    l10n = info.name,
+    name = 'SettingsDataName',
+    permanentStorage = true,
+    settings = {
+        {
+            key = 'ClearData',
+            renderer = info.name .. 'Button',
+            name = 'ClearDataName',
+            description = 'ClearDataDesc',
+            default = 0,
+            argument = {
+                text = 'Clear Data'
+            }
+        }
+    }
+}
+
 -- Debug settings
 
 I.Settings.registerGroup {
     key = 'SettingsPlayer' .. info.name .. 'Debug',
     page = 'Page' .. info.name,
-    order = 5,
+    order = 6,
     l10n = info.name,
     name = 'SettingsDebugName',
     permanentStorage = true,
@@ -453,35 +468,50 @@ I.Settings.registerGroup {
 
 -- Dependent Settings
 
-local function dependentSetting(dependentKeys, keyValues, section, sectionKey)
-    local disabled = false
-    for key, value in pairs(keyValues) do
-        if section:get(key) ~= value then
-            disabled = true
+-- Dependent settings must belong to the same section as the settings they depend on
+local dependentSettings = {
+    AttributeCap = {UniqueAttributeCap = false},
+    UniqueAttributeCapValues = {UniqueAttributeCap = true},
+    RetroactiveStartHealth = {RetroactiveHealth = true},
+    GradualRetroactiveHealth = {RetroactiveHealth = true},
+    GradualRetroactiveHealthIncrement = {RetroactiveHealth = true, GradualRetroactiveHealth = true},
+    CustomHealthCoefficients = {CustomHealth = true},
+    CustomGainMultiplier = {CustomHealth = true}
+}
+
+for i, skillRecord in ipairs(core.stats.Skill.records) do
+    dependentSettings[capital(skillRecord.id) .. 'Attributes'] = {CustomSkillAttributes = true}
+end
+
+-- Need to search this data from both directions
+-- Automatically construct a reversed table
+local dependedSettings = {}
+for dependentKey, dependedKeys in pairs(dependentSettings) do
+    for dependedKey, _ in pairs(dependedKeys) do
+        if dependedSettings[dependedKey] ~= nil then
+            table.insert(dependedSettings[dependedKey], dependentKey)
+        else
+            dependedSettings[dependedKey] = {dependentKey}
         end
-    end
-    for _, dependentKey in pairs(dependentKeys) do
-        local argument = dependentArguments[dependentKey]
-        argument.disabled = disabled
-        I.Settings.updateRendererArgument(sectionKey, dependentKey, argument)
     end
 end
 
-modSettings.basic:subscribe(async:callback(function(section, key)
-    dependentSetting({'AttributeCap'}, {UniqueAttributeCap = false}, modSettings.basic, 'SettingsPlayer' .. info.name)
-    dependentSetting({'UniqueAttributeCapValues'}, {UniqueAttributeCap = true}, modSettings.basic, 'SettingsPlayer' .. info.name)
-end))
-
-modSettings.health:subscribe(async:callback(function(section, key)
-    dependentSetting({'RetroactiveStartHealth', 'GradualRetroactiveHealth'}, {RetroactiveHealth = true}, modSettings.health, 'SettingsPlayer' .. info.name .. 'Health')
-    dependentSetting({'GradualRetroactiveHealthIncrement'}, {RetroactiveHealth = true, GradualRetroactiveHealth = true}, modSettings.health, 'SettingsPlayer' .. info.name .. 'Health')
-    dependentSetting({'CustomHealthCoefficients', 'CustomGainMultiplier'}, {CustomHealth = true}, modSettings.health, 'SettingsPlayer' .. info.name .. 'Health')
-end))
-
-modSettings.skill:subscribe(async:callback(function(section, key)
-    local dependentKeys = {}
-    for skillId, _ in pairs(types.NPC.stats.skills) do
-        table.insert(dependentKeys, capital(skillId) .. 'Attributes')
+local dependentCallback = async:callback(function(sectionKey, changedKey)
+    if changedKey ~= nil and dependedSettings[changedKey] ~= nil then
+        for _, dependentKey in pairs(dependedSettings[changedKey]) do
+            local disabled = false
+            for dependedKey, value in pairs(dependentSettings[dependentKey]) do
+                if modSettings[groupNames[sectionKey]]:get(dependedKey) ~= value then
+                    disabled = true
+                end
+            end
+            local argument = dependentArguments[dependentKey]
+            argument.disabled = disabled
+            I.Settings.updateRendererArgument(sectionKey, dependentKey, argument)
+        end
     end
-    dependentSetting(dependentKeys, {CustomSkillAttributes = true}, modSettings.skill, 'SettingsPlayer' .. info.name .. 'Skill')
-end))
+end)
+
+modSettings.basic:subscribe(dependentCallback)
+modSettings.health:subscribe(dependentCallback)
+modSettings.skill:subscribe(dependentCallback)
