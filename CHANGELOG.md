@@ -20,3 +20,13 @@
 - Fixed high resolution textures displaying poorly in the menu
 - Added correct dependencies to some optional .omwaddons
 - Bumped settings version
+
+## 1.1.0
+- Added a new setting: "Custom Skill-Attribute Assignment"
+- Added a new setting: "Realistic Retroactive Health Gain"
+- Added new settings: "Level Progress Per Misc./Minor/Major Skill Increase"
+- Added a function to clear progression data from a save file
+- Added more specific notifications for settings being changed by updates
+- Exposed some hardcoded UI dimensions to localizations
+- Fixed several issues with settings UI
+- Rewrote descriptions for some settings

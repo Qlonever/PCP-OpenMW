@@ -18,34 +18,25 @@ UniqueAttributeCapDesc: "If enabled, each attribute will have a configurable max
 UniqueAttributeCapValuesName: ""
 
 SettingsHealthName: "Health Settings"
-SettingsHealthDesc: "These settings affect how characters gain health. With default settings, health is gained the same way as in vanilla Morrowind."
+SettingsHealthDesc: "These settings affect how the player's maximum health is calculated. By default, maximum health works the same as in vanilla Morrowind."
 
 RetroactiveHealthName: "Retroactive Health Gain"
-RetroactiveHealthDesc: "If enabled, raising attributes will affect the health gained from previous level-ups as well."
+RetroactiveHealthDesc: "If enabled, health gained from level-ups will be calculated as if relevant attributes had always been at their current value."
 
 RetroactiveStartHealthName: "Retroactive Starting Health"
 RetroactiveStartHealthDesc: "If this and 'Retroactive Health Gain' are enabled, raising attributes will affect the initial health from character creation."
 
-GradualRetroactiveHealthName: "Gradual Retroactive Health Gain"
-GradualRetroactiveHealthDesc: "If this and 'Retroactive Health Gain' are enabled, health gain will be calculated as if relevant attributes had been raised to their current value as early as possible."
+GradualRetroactiveHealthName: "Realistic Retroactive Health Gain"
+GradualRetroactiveHealthDesc: "If this and 'Retroactive Health Gain' are enabled, health gained from level-ups will be calculated as if relevant attributes had been raised to their current value as early as possible."
 
-GradualRetroactiveHealthIncrementName: "Gradual Retroactive Health Increment"
-GradualRetroactiveHealthIncrementDesc: "Calculations for 'Gradual Retroactive Health Gain' will assume that attributes were raised by this value each level."
+GradualRetroactiveHealthIncrementName: "Realistic Retroactive Health Increment"
+GradualRetroactiveHealthIncrementDesc: "Calculations for 'Realistic Retroactive Health Gain' will assume that attributes were raised by this value each level."
 
 CustomHealthName: "Custom Health Calculation"
-CustomHealthDesc: "If enabled, health will be calculated using a weighted average of attribute values, instead of just endurance and strength."
+CustomHealthDesc: "If enabled, health will be calculated using a weighted average of attribute values instead of just endurance and strength."
 
 CustomHealthCoefficientsName: "Custom Health Coefficients"
 CustomHealthCoefficientsDesc: "If 'Custom Health Calculation' is enabled, health gain and starting health will be derived from this average:     (sum of (coeffs * attributes)) /            (sum of coeffs)"
-
-StrengthAbbreviation: "STR"
-IntelligenceAbbreviation: "INT"
-WillpowerAbbreviation: "WIL"
-AgilityAbbreviation: "AGI"
-SpeedAbbreviation: "SPD"
-EnduranceAbbreviation: "END"
-PersonalityAbbreviation: "PER"
-LuckAbbreviation: "LUC"
 
 CustomGainMultiplierName: "Custom Health Gain Multiplier"
 CustomGainMultiplierDesc: "If 'Custom Health Calculation' is enabled, health gained from level-ups will be equal to the weighted average above multiplied by this value."
@@ -83,12 +74,21 @@ CustomSkillAttributesDesc: "If enabled, skills can be configured to contribute t
 SettingsDataName: "Data Settings"
 
 ClearDataName: "Clear Data"
-ClearDataDesc: "Clicking this button will reset the data used to track character progression, as if this mod had just been added to the current save file. This should only be used in niche cases, like redoing character creation in an existing save."
+ClearDataDesc: "Clicking this button will reset the data used to track character progression, making it as if this mod had just been added to the save file. This should only be used in niche cases, like redoing character creation in an existing save."
 
 SettingsDebugName: "Debug Settings"
 
 DebugModeName: "Enable Debug Mode"
 DebugModeDesc: "If enabled, attributes can be raised or lowered freely from the potential menu."
+
+StrengthAbbreviation: "STR"
+IntelligenceAbbreviation: "INT"
+WillpowerAbbreviation: "WIL"
+AgilityAbbreviation: "AGI"
+SpeedAbbreviation: "SPD"
+EnduranceAbbreviation: "END"
+PersonalityAbbreviation: "PER"
+LuckAbbreviation: "LUC"
 
 StartUp: "Your potential has started to develop. Press {keybind} at any time to check your potential and spend experience."
 

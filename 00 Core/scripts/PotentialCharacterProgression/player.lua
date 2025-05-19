@@ -22,7 +22,7 @@ local util = require('openmw.util')
 local Player = types.Player
 
 local mwData = require('scripts.' .. info.name .. '.mwdata')
-local PLui = require('scripts.' .. info.name .. '.ui')
+local PCPui = require('scripts.' .. info.name .. '.ui')
 local settings = require('scripts.' .. info.name .. '.settings')
 
 local function contains(t, element)
@@ -359,11 +359,11 @@ local function showMenu()
         end
     end
 
-    PLui.createMenu(levelUpData, attributeData, experience)
+    PCPui.createMenu(levelUpData, attributeData, experience)
 end
 
 local function hideMenu()
-    PLui.hideMenu()
+    PCPui.hideMenu()
     -- If leveled up or retroactive health gain enabled, calculate health gain with base attributes
     -- Other sources of attribute increases and health should be integrated correctly
     -- Do this in the hide function so it still triggers even if the player just closes the menu

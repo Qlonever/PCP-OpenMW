@@ -36,12 +36,18 @@ If enabled, each attribute will have a configurable maximum value that it cannot
 <Details>
 <Summary>Health Settings</Summary>
 
+These settings affect how the player's maximum health is calculated. By default, maximum health works the same as in vanilla Morrowind.
+
 ### Retroactive Health Gain
-If enabled, raising attributes will affect the health gained from previous level-ups as well. (Default: OFF)
+If enabled, health gained from level-ups will be calculated as if relevant attributes had always been at their current value. (Default: OFF)
 ### Retroactive Starting Health
 If this and 'Retroactive Health Gain' are enabled, raising attributes will affect the initial health from character creation. (Default: OFF)
+### Realistic Retroactive Health Gain
+If this and 'Retroactive Health Gain' are enabled, health gained from level-ups will be calculated as if relevant attributes had been raised to their current value as early as possible. (Default: OFF)
+### Realistic Retroactive Health Increment
+Calculations for 'Realistic Retroactive Health Gain' will assume that attributes were raised by this value each level. (Default: 5)
 ### Custom Health Calculation
-If enabled, health will be calculated using a weighted average of attribute values, instead of just endurance and strength. (Default: OFF)
+If enabled, health will be calculated using a weighted average of attribute values instead of just endurance and strength. (Default: OFF)
 ### Custom Health Coefficients
 If 'Custom Health Calculation' is enabled, health gain and starting health will be derived from this average: `(sum of (coeffs * attributes)) / (sum of coeffs)` (Default: Configured to match NCGDMW Lua)
 ### Custom Health Gain Multiplier
@@ -49,6 +55,8 @@ If 'Custom Health Calculation' is enabled, health gained from level-ups will be 
 </Details>
 <Details>
 <Summary>Balance Settings</Summary>
+
+These settings will alter the balance of character progression. Be careful when changing them.
 
 ### Potential Gained Per Misc. Skill Increase
 (Default: 0.5)
@@ -66,6 +74,80 @@ If 'Custom Health Calculation' is enabled, health gained from level-ups will be 
 (Default: 1)
 ### To Raise Favored Attribute Over Potential
 (Default: 2)
+### Level Progress Per Misc. Skill Increase
+(Default: 1)
+### Level Progress Per Minor Skill Increase
+(Default: 1)
+### Level Progress Per Major Skill Increase
+(Default: 1)
+</Details>
+<Details>
+<Summary>Skill Settings</Summary>
+
+### Custom Skill-Attribute Assignment
+If enabled, skills can be configured to contribute towards different attributes' potential. Total potential gained from a skill increase will remain the same, but it will be divided between attributes by the adjustable ratios below. (DEFAULT: OFF)
+
+#### Acrobatics
+STR 3 / INT 0 / WIL 0 / AGI 1 / SPD 2 / END 1 / PER 0 / LUC 1
+#### Alchemy
+STR 0 / INT 5 / WIL 0 / AGI 0 / SPD 0 / END 1 / PER 1 / LUC 1
+#### Alteration
+STR 0 / INT 2 / WIL 5 / AGI 0 / SPD 0 / END 0 / PER 0 / LUC 1
+#### Armorer
+STR 4 / INT 0 / WIL 0 / AGI 0 / SPD 0 / END 3 / PER 0 / LUC 1
+#### Athletics
+STR 0 / INT 0 / WIL 1 / AGI 0 / SPD 4 / END 2 / PER 0 / LUC 1
+#### Axe
+STR 4 / INT 0 / WIL 0 / AGI 1 / SPD 0 / END 2 / PER 0 / LUC 1
+#### Block
+STR 0 / INT 0 / WIL 0 / AGI 3 / SPD 2 / END 2 / PER 0 / LUC 1
+#### Blunt Weapon
+STR 3 / INT 0 / WIL 2 / AGI 1 / SPD 1 / END 0 / PER 0 / LUC 1
+#### Conjuration
+STR 0 / INT 4 / WIL 2 / AGI 0 / SPD 0 / END 0 / PER 2 / LUC 1
+#### Destruction
+STR 0 / INT 1 / WIL 6 / AGI 0 / SPD 0 / END 0 / PER 0 / LUC 1
+#### Enchant
+STR 0 / INT 6 / WIL 0 / AGI 0 / SPD 0 / END 0 / PER 1 / LUC 1
+#### Hand-to-hand
+STR 1 / INT 0 / WIL 0 / AGI 1 / SPD 4 / END 1 / PER 0 / LUC 1
+#### Heavy Armor
+STR 3 / INT 0 / WIL 0 / AGI 0 / SPD 0 / END 4 / PER 0 / LUC 1
+#### Illusion
+STR 0 / INT 1 / WIL 1 / AGI 0 / SPD 0 / END 0 / PER 5 / LUC 1
+#### Light Armor
+STR 0 / INT 0 / WIL 1 / AGI 3 / SPD 3 / END 0 / PER 0 / LUC 1
+#### Long Blade
+STR 3 / INT 0 / WIL 0 / AGI 2 / SPD 1 / END 1 / PER 0 / LUC 1
+#### Marksman
+STR 2 / INT 1 / WIL 0 / AGI 4 / SPD 0 / END 0 / PER 0 / LUC 1
+#### Medium Armor
+STR 2 / INT 0 / WIL 0 / AGI 1 / SPD 0 / END 4 / PER 0 / LUC 1
+#### Mercantile
+STR 0 / INT 1 / WIL 0 / AGI 0 / SPD 0 / END 0 / PER 6 / LUC 1
+#### Mysticism
+STR 0 / INT 2 / WIL 4 / AGI 0 / SPD 0 / END 0 / PER 1 / LUC 1
+#### Restoration
+STR 0 / INT 1 / WIL 4 / AGI 0 / SPD 0 / END 0 / PER 2 / LUC 1
+#### Security
+STR 0 / INT 3 / WIL 0 / AGI 3 / SPD 0 / END 0 / PER 1 / LUC 1
+#### Short Blade
+STR 1 / INT 0 / WIL 0 / AGI 2 / SPD 4 / END 0 / PER 0 / LUC 1
+#### Sneak
+STR 0 / INT 0 / WIL 0 / AGI 4 / SPD 2 / END 0 / PER 1 / LUC 1
+#### Spear
+STR 1 / INT 0 / WIL 0 / AGI 1 / SPD 1 / END 4 / PER 0 / LUC 1
+#### Speechcraft
+STR 0 / INT 0 / WIL 0 / AGI 0 / SPD 0 / END 0 / PER 7 / LUC 1
+#### Unarmored
+STR 0 / INT 0 / WIL 2 / AGI 0 / SPD 3 / END 2 / PER 0 / LUC 1
+</Details>
+<Details>
+<Summary>Data Settings</Summary>
+
+### Clear Data
+Clicking this button will reset the data used to track character progression, making it as if this mod had just been added to the save file. This should only be used in niche cases, like redoing character creation in an existing save.
+
 </Details>
 
 PCP includes optional modules that change how many skill increases are required to level up. The default is 20, but you can also choose between 10, 15, 25, 30, 40, or 50. See the "Installation" section below.
@@ -90,10 +172,12 @@ content=PotentialCharacterProgression_ModifiedLevelUps_15.omwaddon
 content=PotentialCharacterProgression.omwscripts
 ```
 ### Requirements
-PCP requires a development build of OpenMW newer than August 2024, or any release newer than 0.48. If your version is too old, a warning will appear in the log. (Press F10 or check openmw.log)
+PCP requires OpenMW version 0.49 or later. If your version is too old, a warning will appear in the log. (Press F10 or check openmw.log)
 ### Compatibility
 Anything that changes the level-up process likely won't work with PCP, but mods that occasionally increase/decrease attributes outside of level-ups are fine. Mods changing character creation or skill progression should work too.
-Also, PCP can be added to an existing save without issues.
+PCP can be added to an existing save without issues, but retroactive health calculations won't account for level-ups performed prior to installing it.
+### Known Issues
+Currently, the potential menu can't be bound to controller buttons; this is because the setting uses a custom format. This will be fixed when the built-in binding functions support default bindings and allow bindings to be read.
 ### Updating
 Updating this mod on an existing save shouldn't pose any major problems. However, if existing mod settings change between versions, you may have to re-configure them. An in-game message will inform you if this happens.
 
