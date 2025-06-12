@@ -72,15 +72,11 @@ local resources = {
     classArt = ui.texture{path = 'textures/levelup/acrobat.dds'},
     coin = ui.texture{path = 'icons/tx_goldicon.dds'},
     barColor = ui.texture{path = 'textures/menu_bar_gray.dds'},
-    agility = ui.texture{path = 'icons/k/attribute_agility.dds'},
-    endurance = ui.texture{path = 'icons/k/attribute_endurance.dds'},
-    intelligence = ui.texture{path = 'icons/k/attribute_int.dds'},
-    luck = ui.texture{path = 'icons/k/attribute_luck.dds'},
-    personality = ui.texture{path = 'icons/k/attribute_personality.dds'},
-    speed = ui.texture{path = 'icons/k/attribute_speed.dds'},
-    strength = ui.texture{path = 'icons/k/attribute_strength.dds'},
-    willpower = ui.texture{path = 'icons/k/attribute_wilpower.dds'}
 }
+
+for _, attributeRecord in ipairs(core.stats.Attribute.records) do
+    resources[attributeRecord.id] = ui.texture{path = attributeRecord.icon}
+end
 
 -- Menu variables
 
@@ -215,12 +211,7 @@ local function createAttributeTooltip(attributeId)
     else
         attributeTooltipFlex.content.description.props.size = v2(400, 64)
     end
-    if resources[attributeId] then
-        attributeTooltipFlex.content.headingFlex.content.icon.props.resource = resources[attributeId]
-        attributeTooltipFlex.content.headingFlex.content.icon.props.visible = true
-    else
-        attributeTooltipFlex.content.headingFlex.content.icon.props.visible = false
-    end
+    attributeTooltipFlex.content.headingFlex.content.icon.props.resource = resources[attributeId]
     tooltip.layout.content.padding.content = ui.content{attributeTooltipFlex}
     tooltip.layout.props.visible = true
 end

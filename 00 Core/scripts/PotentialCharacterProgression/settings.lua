@@ -54,8 +54,6 @@ I.Settings.registerPage {
     name = 'PageName'
 }
 
--- Basic settings
-
 -- Something stupid to get around I.Settings.updateRendererArgument() replacing the entire table
 local dependentArguments = {
     AttributeCap = {
@@ -94,6 +92,19 @@ local dependentArguments = {
         disabled = not modSettings.health:get('CustomHealth')
     }
 }
+
+-- Dependent settings must belong to the same section as the settings they depend on
+local dependentSettings = {
+    AttributeCap = {UniqueAttributeCap = false},
+    UniqueAttributeCapValues = {UniqueAttributeCap = true},
+    RetroactiveStartHealth = {RetroactiveHealth = true},
+    GradualRetroactiveHealth = {RetroactiveHealth = true},
+    GradualRetroactiveHealthIncrement = {RetroactiveHealth = true, GradualRetroactiveHealth = true},
+    CustomHealthCoefficients = {CustomHealth = true},
+    CustomGainMultiplier = {CustomHealth = true}
+}
+
+-- Basic settings
 
 I.Settings.registerGroup {
     key = 'SettingsPlayer' .. info.name,
@@ -404,10 +415,11 @@ table.sort(skillList, sortAlphabetical)
 
 for i, skillId in ipairs(skillList) do
     dependentArguments[capital(skillId) .. 'Attributes'] = {integer = false, min = 0, max = nil, disabled = not modSettings.skill:get('CustomSkillAttributes')}
+    dependentSettings[capital(skillId) .. 'Attributes'] = {CustomSkillAttributes = true}
     table.insert(skillSettings, {
         key = capital(skillId) .. 'Attributes',
         renderer = info.name .. 'SkillAttributes',
-        name = core.getGMST('sSkill' .. capital(skillId)) .. '  ',
+        name = core.stats.Skill.record(skillId).name .. '  ',
         default = populateAttributes(skillDefaults[skillId] or {}, 0),
         argument = dependentArguments[capital(skillId) .. 'Attributes']
     })
@@ -467,21 +479,6 @@ I.Settings.registerGroup {
 }
 
 -- Dependent Settings
-
--- Dependent settings must belong to the same section as the settings they depend on
-local dependentSettings = {
-    AttributeCap = {UniqueAttributeCap = false},
-    UniqueAttributeCapValues = {UniqueAttributeCap = true},
-    RetroactiveStartHealth = {RetroactiveHealth = true},
-    GradualRetroactiveHealth = {RetroactiveHealth = true},
-    GradualRetroactiveHealthIncrement = {RetroactiveHealth = true, GradualRetroactiveHealth = true},
-    CustomHealthCoefficients = {CustomHealth = true},
-    CustomGainMultiplier = {CustomHealth = true}
-}
-
-for i, skillRecord in ipairs(core.stats.Skill.records) do
-    dependentSettings[capital(skillRecord.id) .. 'Attributes'] = {CustomSkillAttributes = true}
-end
 
 -- Need to search this data from both directions
 -- Automatically construct a reversed table
