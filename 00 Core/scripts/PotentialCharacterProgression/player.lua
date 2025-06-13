@@ -38,7 +38,36 @@ local function capital(text)
     return text:gsub('^%l', string.upper)
 end
 
--- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+-- Mod compatibility -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+-- Custom Skill Caps
+
+local CSCSettings = {}
+
+if core.contentFiles.indexOf('CustomSkillCaps.omwscripts') ~= nil then
+    CSCSettings.basic = storage.playerSection('SettingsPlayerCustomSkillCapsBasic')
+end
+
+-- Get maximum value for skill depending on settings
+local function getSkillCap(skillId)
+    if CSCSettings.basic ~= nil then
+        if CSCSettings.basic:get('UniqueSkillCap') then
+            return CSCSettings.basic:get(capital(skillId) .. 'Cap')
+        else
+            return CSCSettings.basic:get('SkillCap')
+        end
+    else
+        return 100
+    end
+end
+
+
+
+
+
+
+
+-- Script constants/variables -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
 -- Mod settings
 
@@ -415,19 +444,23 @@ local function handleskillUps(skillId, source, options)
     options.levelUpProgress = nil
     if options.skillIncreaseValue and (options.levelUpAttribute or modSettings.skill:get('CustomSkillAttributes')) then
         -- Adjust the perceived skill increase based on settings and recorded peak value
-        local skillIncrease = options.skillIncreaseValue
-        local skillNewValue = skillIncrease + playerSkills[skillId](self).base
-        if not modSettings.basic:get('JailExploit') then
-            skillIncrease = skillNewValue - skillData[skillId].peak
+        -- Also account for built-in handlers fraudulently triggering skillLevelUps
+        local skillBase = playerSkills[skillId](self).base
+        local skillNewBase = options.skillIncreaseValue + skillBase
+        if getSkillCap(skillId) ~= 0 then
+            skillNewBase = math.min(skillNewBase, getSkillCap(skillId))
         end
-        skillIncrease = util.clamp(skillIncrease, 0, options.skillIncreaseValue)
+        if not modSettings.basic:get('JailExploit') then
+            skillBase = math.max(skillBase, skillData[skillId].peak)
+        end
+        local skillIncrease = skillNewBase - skillBase
         
-        if skillIncrease == 0 then
+        if skillIncrease <= 0 then
             return true
         end
         
         -- Update stored skill data
-        skillData[skillId].peak = math.max(skillNewValue, skillData[skillId].peak)
+        skillData[skillId].peak = math.max(skillNewBase, skillData[skillId].peak)
         skillData[skillId].ups = skillData[skillId].ups + skillIncrease
         skillData[skillId].upsCurLevel = skillData[skillId].upsCurLevel + skillIncrease
         totalSkillUpsCurLevel = totalSkillUpsCurLevel + skillIncrease

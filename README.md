@@ -174,7 +174,7 @@ content=PotentialCharacterProgression.omwscripts
 ### Requirements
 PCP requires OpenMW version 0.49 or later. If your version is too old, a warning will appear in the log. (Press F10 or check openmw.log)
 ### Compatibility
-Anything that changes the level-up process likely won't work with PCP, but mods that occasionally increase/decrease attributes outside of level-ups are fine. Mods changing character creation or skill progression should work too.
+Anything that changes the level-up process likely won't work with PCP, but mods that occasionally increase/decrease attributes outside of level-ups are fine. Mods changing character creation or skill progression should work too. Specifically, Custom Skill Caps (https://github.com/Qlonever/CSC-OpenMW) is compatible with PCP.
 PCP can be added to an existing save without issues, but retroactive health calculations won't account for level-ups performed prior to installing it.
 ### Known Issues
 Currently, the potential menu can't be bound to controller buttons; this is because the setting uses a custom format. This will be fixed when the built-in binding functions support default bindings and allow bindings to be read.
@@ -188,5 +188,6 @@ Special thanks to everyone in the OpenMW Discord server who answered my Lua modd
 Additional thanks to the creators of NCGDMW Lua for letting me use some of their settings as defaults in PCP. (https://www.nexusmods.com/morrowind/mods/53136)
 
 ## Source
-This mod can be found on Github: https://github.com/Qlonever/PCP-OpenMW 
+This mod can be found on Github: https://github.com/Qlonever/PCP-OpenMW
+
 Updates there will be smaller and more frequent.

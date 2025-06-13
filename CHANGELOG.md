@@ -30,3 +30,4 @@
 - Exposed some hardcoded UI dimensions to localizations
 - Fixed several issues with settings UI
 - Rewrote descriptions for some settings
+- Fixed a bug when using or increasing an already maxed skill
