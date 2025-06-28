@@ -184,8 +184,6 @@ templates.disabled = {
     }
 }
 
-    
-
 -- Create a padding template with adjustable size in both axes
 local function padding(sizeH, sizeV)
     local customPadding = {

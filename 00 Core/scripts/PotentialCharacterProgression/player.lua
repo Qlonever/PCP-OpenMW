@@ -146,6 +146,7 @@ local totalSkillUpsCurLevel = 0
 
 -- Runtime Variables
 
+local existingSave = true
 local isCharGenFinished = false
 local startAttributes
 local isLevelUp = true
@@ -338,7 +339,7 @@ end
 local function getLevelUpClass()
     local highestScore = 0
     local highestClass = 'acrobat'
-    
+
     -- Vanilla MW's calculation for this is needlessly complex, this is completely different
     local modifiers = {
         m  = 0.5,
@@ -347,7 +348,7 @@ local function getLevelUpClass()
         mS = 1.0,
         MS = 1.5
     }
-    
+
     for class, data in pairs(mwData.classData) do
         local score = 0
         for skillId, tag in pairs(data) do
@@ -358,7 +359,7 @@ local function getLevelUpClass()
             highestClass = class
         end
     end
-        
+
     return highestClass
 end
 
@@ -377,7 +378,7 @@ local function showMenu()
             levelUps = levelUps + levelsGained
             experience = experience + (levelsGained * modSettings.balance:get('ExperiencePerLevel'))
             ambient.streamMusic('Music/Special/MW_Triumph.mp3')
-            
+
             levelUpData = {
                 level = nextLevel,
                 ups = levelsGained,
@@ -385,6 +386,10 @@ local function showMenu()
             }
 
             setSkillsValue('upsLastLevels', 0)
+            -- PCP doesn't use this value, but reset it like normal for additional compatibility when uninstalling
+            for i, attributeRecord in ipairs(core.stats.Attribute.records) do
+                playerStats.level(self).skillIncreasesForAttribute[attributeRecord.id] = 0
+            end
         end
     end
 
@@ -414,7 +419,7 @@ local function finishMenu(data)
         attributeData[attributeId].ups = attributeData[attributeId].ups + uiAttribute.ups
         playerAttributes[attributeId](self).base = playerAttributes[attributeId](self).base + uiAttribute.ups
     end
-    
+
     -- If menu wasn't triggered by a level-up and retroactive gain is off, calculate health gain for 1 level
     -- Calculate only with menu attribute increases, don't integrate other attribute increases
     -- Do this in the finish menu event to avoid passing individual increase data to the hide function
@@ -425,7 +430,7 @@ local function finishMenu(data)
         end
         calculateHealthIncrease(healthAttributes, false, false, 1)
     end
-    
+
     experience = data.uiExperience
     I.UI.removeMode('LevelUp')
 end
@@ -437,6 +442,36 @@ end
 
 
 -- Handlers -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+-- Increase attributes' potential given an increase value, governing attribute, and (optionally) skill ID
+local function increasePotential(increase, attributeId, skillId)
+    local playerRecords = getPlayerRecords()
+
+    -- Adjust the level progress/potential gained based on user settings
+    local potentialMult = modSettings.balance:get('PotentialPerSkill')
+    if skillId ~= nil then
+        if contains(playerRecords.class.minorSkills, skillId) then
+            potentialMult = modSettings.balance:get('PotentialPerMinorSkill')
+        elseif contains(playerRecords.class.majorSkills, skillId) then
+            potentialMult = modSettings.balance:get('PotentialPerMajorSkill')
+        end
+    end
+
+    -- Extra logic for governing attribute reassignment
+    -- Divide the earned potential between each attribute based on their set values
+    if modSettings.skill:get('CustomSkillAttributes') and skillId ~= nil then
+        local total = 0
+        local skillAttributes = modSettings.skill:get(capital(skillId) .. 'Attributes')
+        for attributeId, value in pairs(skillAttributes) do
+            total = total + value
+        end
+        for attributeId, value in pairs(skillAttributes) do
+            attributeData[attributeId].potential = attributeData[attributeId].potential + increase * potentialMult * skillAttributes[attributeId] / total
+        end  
+    else
+        attributeData[attributeId].potential = attributeData[attributeId].potential + increase * potentialMult
+    end
+end
 
 -- Increase level progress and attribute potential for every skill increase 
 -- Also track highest value for each skill, for use with the jail exploit setting
@@ -454,11 +489,11 @@ local function handleskillUps(skillId, source, options)
             skillBase = math.max(skillBase, skillData[skillId].peak)
         end
         local skillIncrease = skillNewBase - skillBase
-        
+
         if skillIncrease <= 0 then
             return true
         end
-        
+
         -- Update stored skill data
         skillData[skillId].peak = math.max(skillNewBase, skillData[skillId].peak)
         skillData[skillId].ups = skillData[skillId].ups + skillIncrease
@@ -469,32 +504,16 @@ local function handleskillUps(skillId, source, options)
 
         -- Adjust the level progress/potential gained based on user settings
         local progressMult = modSettings.balance:get('LevelProgressPerSkill')
-        local potentialMult = modSettings.balance:get('PotentialPerSkill')
         if contains(playerRecords.class.minorSkills, skillId) then
             progressMult = modSettings.balance:get('LevelProgressPerMinorSkill')
-            potentialMult = modSettings.balance:get('PotentialPerMinorSkill')
         elseif contains(playerRecords.class.majorSkills, skillId) then
             progressMult = modSettings.balance:get('LevelProgressPerMajorSkill')
-            potentialMult = modSettings.balance:get('PotentialPerMajorSkill')
         end
-        
+
+        increasePotential(skillIncrease, options.levelUpAttribute, skillId)
+
         options.levelUpProgress = skillIncrease * progressMult
-        
-        -- Extra logic for governing attribute reassignment
-        -- Divide the earned potential between each attribute based on their set values
-        if modSettings.skill:get('CustomSkillAttributes') then
-            local total = 0
-            local skillAttributes = modSettings.skill:get(capital(skillId) .. 'Attributes')
-            for attributeId, value in pairs(skillAttributes) do
-                total = total + value
-            end
-            for attributeId, value in pairs(skillAttributes) do
-                attributeData[attributeId].potential = attributeData[attributeId].potential + skillIncrease * potentialMult * skillAttributes[attributeId] / total
-            end  
-        else
-            attributeData[options.levelUpAttribute].potential = attributeData[options.levelUpAttribute].potential + skillIncrease * potentialMult
-        end
-        
+
         -- Prepare for level-up
         if totalSkillUpsCurLevel >= skillUpsPerLevel then
             totalSkillUpsCurLevel = totalSkillUpsCurLevel % skillUpsPerLevel
@@ -524,7 +543,21 @@ local function finishCharGen()
     for i, skillRecord in ipairs(core.stats.Skill.records) do
         skillData[skillRecord.id].peak = playerSkills[skillRecord.id](self).base
     end
-    totalSkillUpsCurLevel = playerStats.level(self).progress % skillUpsPerLevel
+    local levelProgress = playerStats.level(self).progress
+    totalSkillUpsCurLevel = levelProgress % skillUpsPerLevel
+
+    -- Give potential for skill increases before this mod was installed
+    -- Can't identify which skills were increased, only their governing attributes
+    if existingSave then
+        for i, attributeRecord in ipairs(core.stats.Attribute.records) do
+            local attributeId = attributeRecord.id
+            local governedSkillUps = playerStats.level(self).skillIncreasesForAttribute[attributeId]
+            local difference = math.min(governedSkillUps, levelProgress)
+            levelProgress = levelProgress - difference
+            increasePotential(difference, attributeId)
+        end
+    end
+
     local keybind = input.getKeyName(modSettings.basic:get('MenuKey'))
     local charGenCallback = async:registerTimerCallback('charGenMessage', function()  ui.showMessage(L('StartUp', {keybind = keybind}), {showInDialogue = false}) end)
     async:newSimulationTimer(0.1, charGenCallback)
@@ -535,6 +568,8 @@ local function onUpdate()
         if Player.isCharGenFinished(self) then
             isCharGenFinished = true
             finishCharGen()
+        else
+            existingSave = false
         end
     end
 end
@@ -605,6 +640,7 @@ local function onLoad(data)
     experience = data.experience or experience
     totalHealthGained = data.totalHealthGained or totalHealthGained
     totalSkillUpsCurLevel = data.totalSkillUpsCurLevel or totalSkillUpsCurLevel
+    existingSave = false
     isCharGenFinished = true
 end
 

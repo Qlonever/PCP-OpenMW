@@ -379,4 +379,3 @@ local classData = {
 return {
     classData = classData
 }
-    

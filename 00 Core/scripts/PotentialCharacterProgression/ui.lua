@@ -640,7 +640,7 @@ end
 -- UI creation function called from the main script
 local function createMenu(levelUpData, attributeData, experience)
     uiExperience = experience
-    
+
     uiDistributed = false
 
     -- Can't read this when the script first loads if the player doesn't have a class yet
@@ -656,7 +656,7 @@ local function createMenu(levelUpData, attributeData, experience)
     else
         attributeCaps = {}
     end
-    
+
     debugMode = modSettings.debug:get('DebugMode')
 
     expCostTable = {
@@ -771,7 +771,7 @@ local function createMenu(levelUpData, attributeData, experience)
         })
 
         -- Potential decimal, split to align at decimal point
-        local potFrac = potString:gsub('^%d+', ''):sub(1, 4)
+        local potFrac = potString:gsub('^%d+', ''):sub(1, 5)
         uiColumns.attributePotsFrac.content:add(sizeRow{
             name = attributeId,
             type = ui.TYPE.Text,
@@ -826,7 +826,7 @@ local function createMenu(levelUpData, attributeData, experience)
             }
         }
     }
-    
+
     -- Visible coins equal to maxCoins, after which just display a number
     local coinCount = math.min(uiExperience, maxCoins)
     local offset = math.min(math.floor(120 / (coinCount - 1)), 16)
@@ -860,7 +860,7 @@ local function createMenu(levelUpData, attributeData, experience)
             }
         }
     }
-    
+
     -- Column(s) pertaining to potential
     potentialFlex = ui.create{
         name = 'potentialFlex',
@@ -885,7 +885,7 @@ local function createMenu(levelUpData, attributeData, experience)
             }
         }
     }
-    
+
     -- Confirm and auto-distribute buttons
     confirmButton = ui.create{}
     autoButton = ui.create{}
@@ -896,7 +896,7 @@ local function createMenu(levelUpData, attributeData, experience)
     if debugMode then
         autoButton.layout.props.visible = false
     end
-    
+
     updateExperience(uiExperience)  
     updateAttributeRows{dec = true, num = true, inc = true, pot = true}
 

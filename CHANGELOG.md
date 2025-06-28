@@ -18,7 +18,7 @@
 - Fixed issues with health gain logic
 - Fixed potential displaying incorrectly in rare cases
 - Fixed high resolution textures displaying poorly in the menu
-- Added correct dependencies to some optional .omwaddons
+- Fixed dependencies on some optional .omwaddons
 - Bumped settings version
 
 ## 1.1.0
@@ -26,8 +26,11 @@
 - Added a new setting: "Realistic Retroactive Health Gain"
 - Added new settings: "Level Progress Per Misc./Minor/Major Skill Increase"
 - Added a function to clear progression data from a save file
+- Added code to grant potential for prior skill increases when adding PCP to a save
 - Added more specific notifications for settings being changed by updates
+- Tweaked descriptions for some settings
+- Tweaked UI to display up to four decimal digits for attribute potentials
 - Exposed some hardcoded UI dimensions to localizations
 - Fixed several issues with settings UI
-- Rewrote descriptions for some settings
 - Fixed a bug when using or increasing an already maxed skill
+- Fixed an issue with attribute multiplier values when removing PCP from a save
