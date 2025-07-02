@@ -35,14 +35,16 @@ end
 -- Mod settings
 
 local modSettings = {
-    basic = storage.playerSection('SettingsPlayer' .. info.name),
+    basic = storage.playerSection('SettingsPlayer' .. info.name .. 'Basic'),
     balance = storage.playerSection('SettingsPlayer' .. info.name .. 'Balance'),
     debug = storage.playerSection('SettingsPlayer' .. info.name .. 'Debug')
 }
 
-local isCapUnique
+local attributeCapMethod
 local sharedAttributeCap
-local attributeCaps
+local favoredAttributeCap
+local unfavoredAttributeCap
+local uniqueAttributeCaps
 local debugMode
 local expCostTable
 
@@ -486,7 +488,7 @@ local function modifyAttributeRow(attributeId, isOrigin)
         changed.exp = true
 
         -- Color attribute potential, don't bother if debug mode is enabled or base is already above cap
-        if not (debugMode or attribute.base > attributeCaps[attributeId]) then
+        if not (debugMode or attribute.base > attribute.cap) then
             local diff = math.floor(attribute.potential) - attribute.ups
 
             local potentialColor = myui.interactiveTextColors.normal.default
@@ -515,10 +517,10 @@ local function modifyAttributeRow(attributeId, isOrigin)
 
     -- Enable/disable attribute increment button
     local cost = expCost(attribute.isFavored, attribute.ups + 1 > attribute.potential)
-    if (cost > uiExperience or attribute.base + attribute.ups + 1 > attributeCaps[attributeId]) and not uiColumns.attributeIncs.layout.content[attributeId].content[attributeId].userData.isDisabled then
+    if (cost > uiExperience or attribute.base + attribute.ups + 1 > attribute.cap) and not uiColumns.attributeIncs.layout.content[attributeId].content[attributeId].userData.isDisabled then
         myui.disableWidget(uiColumns.attributeIncs.layout.content[attributeId].content[attributeId])
         changed.inc = true
-    elseif cost <= uiExperience and attribute.base + attribute.ups + 1 <= attributeCaps[attributeId] and uiColumns.attributeIncs.layout.content[attributeId].content[attributeId].userData.isDisabled then
+    elseif cost <= uiExperience and attribute.base + attribute.ups + 1 <= attribute.cap and uiColumns.attributeIncs.layout.content[attributeId].content[attributeId].userData.isDisabled then
         myui.enableWidget(uiColumns.attributeIncs.layout.content[attributeId].content[attributeId])
         changed.inc = true
     end
@@ -649,13 +651,11 @@ local function createMenu(levelUpData, attributeData, experience)
 
     -- Set these at menu creation so settings can update mid-session
 
-    sharedAttributeCap = modSettings.basic:get('AttributeCap')
-    isCapUnique = modSettings.basic:get('UniqueAttributeCap')
-    if isCapUnique then
-        attributeCaps = modSettings.basic:get('UniqueAttributeCapValues')
-    else
-        attributeCaps = {}
-    end
+    attributeCapMethod = modSettings.basic:get('AttributeCapMethod')
+    sharedAttributeCap = modSettings.basic:get('SharedAttributeCap')
+    favoredAttributeCap = modSettings.basic:get('FavoredAttributeCap')
+    unfavoredAttributeCap = modSettings.basic:get('UnfavoredAttributeCap')
+    uniqueAttributeCaps = modSettings.basic:get('UniqueAttributeCapValues')
 
     debugMode = modSettings.debug:get('DebugMode')
 
@@ -670,6 +670,8 @@ local function createMenu(levelUpData, attributeData, experience)
         }
     }
 
+    uiAttributes = {}
+
     -- Create the interactive parts of the UI
 
     -- Create UI columns
@@ -683,20 +685,31 @@ local function createMenu(levelUpData, attributeData, experience)
         attributePotsFrac = {name = 'attributePotsFrac', type = ui.TYPE.Flex, content = ui.content{}}
     }
 
-    -- Populate UI columns
+    -- Iterate over attributes to populate UI columns
     for i, attributeRecord in ipairs(core.stats.Attribute.records) do
         uiAttributes[attributeRecord.id] = {}
         local attributeId = attributeRecord.id
         local attribute = uiAttributes[attributeId]
-        if attribute.isFavored == nil then
-            attribute.isFavored = contains(playerClassRecord.attributes, attributeId)
+
+        attribute.isFavored = contains(playerClassRecord.attributes, attributeId)
+
+        if attributeCapMethod == 'SharedCap' then
+            attribute.cap = sharedAttributeCap
+        elseif attributeCapMethod == 'FavoredCap' then
+            if attribute.isFavored then
+                attribute.cap = favoredAttributeCap
+            else
+                attribute.cap = unfavoredAttributeCap
+            end
+        elseif attributeCapMethod == 'UniqueCap' then
+            attribute.cap = uniqueAttributeCaps[attributeId]
+        else
+            attribute.cap = 100
         end
-        if attributeCaps[attributeId] == nil then
-            attributeCaps[attributeId] = sharedAttributeCap
-        end
+
         attribute.experience = 0
         attribute.base = Player.stats.attributes[attributeId](self).base
-        attribute.potential = math.min(attributeData[attributeRecord.id].potential, attributeCaps[attributeId] - attribute.base)
+        attribute.potential = math.min(attributeData[attributeRecord.id].potential, attribute.cap - attribute.base)
         attribute.ups = 0
 
         -- EXP spent indicator

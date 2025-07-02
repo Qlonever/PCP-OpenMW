@@ -28,10 +28,10 @@ By default, PCP is balanced so that 20 skill increases will allow you to raise y
 This key opens up the potential menu, where you can check and use your potential and experience. This is the same menu that you see upon leveling up. (Default: L)
 ### Allow Jail Time Exploit
 If enabled, skill points lost in jail and then regained later will still contribute to potential and level-up progress. (Default: OFF)
-### Attribute Cap
-You cannot raise attributes above this value. (Default: 100)
-### Cap Attributes Individually
-If enabled, each attribute will have a configurable maximum value that it cannot be raised above. (Default: OFF)
+### Attribute Capping Method
+Attributes have a configurable maximum value that they cannot be raised above. This setting decides whether attributes will share one maximum value, use differing maximums if they are favored, or use completely unique maximums. (Default: Shared)
+### Shared/Favored/Unfavored/Unique Attribute Caps
+(Default: All 100)
 </Details>
 <Details>
 <Summary>Health Settings</Summary>
@@ -179,7 +179,7 @@ PCP can be added to an existing save without issues, but retroactive health calc
 ### Known Issues
 Currently, the potential menu can't be bound to controller buttons; this is because the setting uses a custom format. This will be fixed when the built-in binding functions support default bindings and allow bindings to be read.
 ### Updating
-Updating this mod on an existing save shouldn't pose any major problems. However, if existing mod settings change between versions, you may have to re-configure them. An in-game message will inform you if this happens.
+Updating this mod on an existing save shouldn't pose any major problems. A message will appear in-game if there are any issues.
 
 ## Credits
 Author: Qlonever

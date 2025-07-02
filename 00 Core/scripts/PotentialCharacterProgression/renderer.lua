@@ -5,7 +5,6 @@ local ui = require('openmw.ui')
 local util = require('openmw.util')
 
 local info = require('scripts.PotentialCharacterProgression.info')
-local L = core.l10n(info.name)
 
 if core.API_REVISION < info.minApiVersion then
     return
@@ -99,12 +98,13 @@ I.Settings.registerRenderer(info.name .. 'KeyBind', function(value, set)
     return rendererLayout
 end)
 
--- Unused selection renderer
+-- Custom selection renderer
 I.Settings.registerRenderer(info.name .. 'Select', function(value, set, argument)
+    local L = core.l10n(argument.l10n)
     local optionsContent = ui.content {}
     for _, item in pairs(argument.items) do
         local itemColor = nil
-        if tostring(item) == tostring(value) then
+        if item == value then
             itemColor = myui.interactiveTextColors.active.default
         end
         local itemLayout = {
@@ -114,10 +114,10 @@ I.Settings.registerRenderer(info.name .. 'Select', function(value, set, argument
                 {
                     type = ui.TYPE.Text,
                     template = I.MWUI.templates.textNormal,
-                    props = {text = L(tostring(item)), textColor = itemColor, textAlignV = ui.ALIGNMENT.Center},
+                    props = {text = L(item), textColor = itemColor, textAlignV = ui.ALIGNMENT.Center},
                     events = {
                         mouseClick = async:callback(function(mouseEvent, data)
-                            set(tostring(item))
+                            set(item)
                         end)
                     }
                 }
@@ -127,7 +127,7 @@ I.Settings.registerRenderer(info.name .. 'Select', function(value, set, argument
     end
     local rendererLayout = {
         type = ui.TYPE.Container,
-        template = I.MWUI.templates.boxSolid,
+        template = I.MWUI.templates.box,
         props = {visible = true},
         content = ui.content {
             {
@@ -136,14 +136,14 @@ I.Settings.registerRenderer(info.name .. 'Select', function(value, set, argument
                 content = ui.content {
                     {
                         type = ui.TYPE.Flex,
-                        props = {},
+                        props = {arrange = ui.ALIGNMENT.Center},
                         content = optionsContent
                     }
                 }
             }
         }
     }
-    return disable(argument.disabled, rendererLayout)
+    return disable(argument.disabled, rendererLayout, true)
 end)
 
 -- Modified version of default number renderer
@@ -224,6 +224,7 @@ end)
 
 -- Renderer for custom health coefficients
 local function createCoefficientField(value, set, argument, attributeId, first)
+    local L = core.l10n(argument.l10n)
     local lastInput = nil
     local plus = {}
     if not first then
@@ -269,6 +270,7 @@ I.Settings.registerRenderer(info.name .. 'Coefficients', function(value, set, ar
 end)
 
 I.Settings.registerRenderer(info.name .. 'SkillAttributes', function(value, set, argument)
+    local L = core.l10n(argument.l10n)
     local rendererLayout = {
         type = ui.TYPE.Flex,
         props = {},

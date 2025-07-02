@@ -10,19 +10,9 @@ local info = require('scripts.PotentialCharacterProgression.info')
 local mwData = require('scripts.' .. info.name .. '.mwdata')
 
 local modSettings = {
-    basic = storage.playerSection('SettingsPlayer' .. info.name),
+    basic = storage.playerSection('SettingsPlayer' .. info.name .. 'Basic'),
     health = storage.playerSection('SettingsPlayer' .. info.name .. 'Health'),
     skill = storage.playerSection('SettingsPlayer' .. info.name .. 'Skill')
-}
-
--- This is only necessary because the basic section does not match the naming convention
-local groupNames = {
-    ['SettingsPlayer' .. info.name] = 'basic',
-    ['SettingsPlayer' .. info.name .. 'Health'] = 'health',
-    ['SettingsPlayer' .. info.name .. 'Balance'] = 'balance',
-    ['SettingsPlayer' .. info.name .. 'Skill'] = 'skill',
-    ['SettingsPlayer' .. info.name .. 'Data'] = 'data',
-    ['SettingsPlayer' .. info.name .. 'Debug'] = 'debug'
 }
 
 local function sortAlphabetical(a, b)
@@ -56,16 +46,26 @@ I.Settings.registerPage {
 
 -- Something stupid to get around I.Settings.updateRendererArgument() replacing the entire table
 local dependentArguments = {
-    AttributeCap = {
+    SharedAttributeCap = {
         integer = true,
         min = 0,
-        disabled = modSettings.basic:get('UniqueAttributeCap')
+        disabled = modSettings.basic:get('AttributeCapMethod') ~= 'SharedCap'
+    },
+    FavoredAttributeCap = {
+        integer = true,
+        min = 0,
+        disabled = modSettings.basic:get('AttributeCapMethod') ~= 'FavoredCap'
+    },
+    UnfavoredAttributeCap = {
+        integer = true,
+        min = 0,
+        disabled = modSettings.basic:get('AttributeCapMethod') ~= 'FavoredCap'
     },
     UniqueAttributeCapValues = {
         integer = true,
         min = 0,
         max = nil,
-        disabled = not modSettings.basic:get('UniqueAttributeCap')
+        disabled = modSettings.basic:get('AttributeCapMethod') ~= 'UniqueCap'
     },
     RetroactiveStartHealth = {
         disabled = not modSettings.health:get('RetroactiveHealth')
@@ -80,6 +80,7 @@ local dependentArguments = {
         disabled = not (modSettings.health:get('RetroactiveHealth') and modSettings.health:get('GradualRetroactiveHealth'))
     },
     CustomHealthCoefficients = {
+        l10n = info.name,
         integer = false,
         min = nil,
         max = nil,
@@ -95,8 +96,10 @@ local dependentArguments = {
 
 -- Dependent settings must belong to the same section as the settings they depend on
 local dependentSettings = {
-    AttributeCap = {UniqueAttributeCap = false},
-    UniqueAttributeCapValues = {UniqueAttributeCap = true},
+    SharedAttributeCap = {AttributeCapMethod = 'SharedCap'},
+    FavoredAttributeCap = {AttributeCapMethod = 'FavoredCap'},
+    UnfavoredAttributeCap = {AttributeCapMethod = 'FavoredCap'},
+    UniqueAttributeCapValues = {AttributeCapMethod = 'UniqueCap'},
     RetroactiveStartHealth = {RetroactiveHealth = true},
     GradualRetroactiveHealth = {RetroactiveHealth = true},
     GradualRetroactiveHealthIncrement = {RetroactiveHealth = true, GradualRetroactiveHealth = true},
@@ -107,7 +110,7 @@ local dependentSettings = {
 -- Basic settings
 
 I.Settings.registerGroup {
-    key = 'SettingsPlayer' .. info.name,
+    key = 'SettingsPlayer' .. info.name .. 'Basic',
     page = 'Page' .. info.name,
     order = 1,
     l10n = info.name,
@@ -128,19 +131,36 @@ I.Settings.registerGroup {
             default = false
         },
         {
-            key = 'AttributeCap',
-            renderer = 'number',
-            name = 'AttributeCapName',
-            description = 'AttributeCapDesc',
-            default = 100,
-            argument = dependentArguments.AttributeCap
+            key = 'AttributeCapMethod',
+            renderer = info.name .. 'Select',
+            name = 'AttributeCapMethodName',
+            description = 'AttributeCapMethodDesc',
+            default = 'SharedCap',
+            argument = {
+                items = {'SharedCap', 'FavoredCap', 'UniqueCap'},
+                l10n = info.name
+            }
         },
         {
-            key = 'UniqueAttributeCap',
-            renderer = 'checkbox',
-            name = 'UniqueAttributeCapName',
-            description = 'UniqueAttributeCapDesc',
-            default = false
+            key = 'SharedAttributeCap',
+            renderer = 'number',
+            name = 'SharedAttributeCapName',
+            default = 100,
+            argument = dependentArguments.SharedAttributeCap
+        },
+        {
+            key = 'FavoredAttributeCap',
+            renderer = 'number',
+            name = 'FavoredAttributeCapName',
+            default = 100,
+            argument = dependentArguments.FavoredAttributeCap
+        },
+        {
+            key = 'UnfavoredAttributeCap',
+            renderer = 'number',
+            name = 'UnfavoredAttributeCapName',
+            default = 100,
+            argument = dependentArguments.UnfavoredAttributeCap
         },
         {
             key = 'UniqueAttributeCapValues',
@@ -414,7 +434,7 @@ end
 table.sort(skillList, sortAlphabetical)
 
 for i, skillId in ipairs(skillList) do
-    dependentArguments[capital(skillId) .. 'Attributes'] = {integer = false, min = 0, max = nil, disabled = not modSettings.skill:get('CustomSkillAttributes')}
+    dependentArguments[capital(skillId) .. 'Attributes'] = {l10n = info.name, integer = false, min = 0, max = nil, disabled = not modSettings.skill:get('CustomSkillAttributes')}
     dependentSettings[capital(skillId) .. 'Attributes'] = {CustomSkillAttributes = true}
     table.insert(skillSettings, {
         key = capital(skillId) .. 'Attributes',
@@ -495,10 +515,11 @@ end
 
 local dependentCallback = async:callback(function(sectionKey, changedKey)
     if changedKey ~= nil and dependedSettings[changedKey] ~= nil then
+        local groupName = sectionKey:gsub('SettingsPlayer' .. info.name, ''):lower()
         for _, dependentKey in pairs(dependedSettings[changedKey]) do
             local disabled = false
             for dependedKey, value in pairs(dependentSettings[dependentKey]) do
-                if modSettings[groupNames[sectionKey]]:get(dependedKey) ~= value then
+                if modSettings[groupName]:get(dependedKey) ~= value then
                     disabled = true
                 end
             end

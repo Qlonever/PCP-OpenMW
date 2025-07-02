@@ -24,10 +24,12 @@
 ## 1.1.0
 - Added a new setting: "Custom Skill-Attribute Assignment"
 - Added a new setting: "Realistic Retroactive Health Gain"
+- Added new settings: "Favored/Unfavored Attribute Cap"
 - Added new settings: "Level Progress Per Misc./Minor/Major Skill Increase"
 - Added a function to clear progression data from a save file
 - Added code to grant potential for prior skill increases when adding PCP to a save
-- Added more specific notifications for settings being changed by updates
+- Added code to automatically migrate certain settings values
+- Added more specific notifications for settings being removed by updates
 - Tweaked descriptions for some settings
 - Tweaked UI to display up to four decimal digits for attribute potentials
 - Exposed some hardcoded UI dimensions to localizations

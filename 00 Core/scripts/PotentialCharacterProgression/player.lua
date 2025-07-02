@@ -72,7 +72,8 @@ end
 -- Mod settings
 
 local modSettings = {
-    basic = storage.playerSection('SettingsPlayer' .. info.name),
+    basicOld = storage.playerSection('SettingsPlayer' .. info.name),
+    basic = storage.playerSection('SettingsPlayer' .. info.name .. 'Basic'),
     health = storage.playerSection('SettingsPlayer' .. info.name .. 'Health'),
     balance = storage.playerSection('SettingsPlayer' .. info.name .. 'Balance'),
     skill = storage.playerSection('SettingsPlayer' .. info.name .. 'Skill'),
@@ -152,6 +153,8 @@ local startAttributes
 local isLevelUp = true
 local levelUpData
 
+local debugEnabled = false
+
 
 
 
@@ -161,6 +164,7 @@ local levelUpData
 -- Debug stuff -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
 local function infoDump()
+    if not debugEnabled then return end
     for attributeId, attribute in pairs(attributeData) do
         print(attributeId .. ' increases: ' .. attribute.ups)
         print(attributeId .. ' potential: ' .. attribute.potential)
@@ -175,6 +179,11 @@ local function infoDump()
     print('Level-ups: ' .. levelUps)
     print('Experience: ' .. experience)
     print('Total health gained: ' .. totalHealthGained)
+end
+
+local function debugPrint(text)
+    if not debugEnabled then return end
+    print(text)
 end
 
 
@@ -596,12 +605,48 @@ local function onKeyPress(key)
     end
 end
 
--- List of specific setting changes for each settings version
--- Used to inform player what settings they need to adjust after updating
+-- Lists of moved/removed settings for each settings version
+-- Used to migrate old setting values/inform player when a setting was removed
 
-local settingsChanges = {
+-- Functions for migrating settings
+-- Settings to be migrated are not assumed to exist
+local settingsMoved = {
     [1] = {},
-    [2] = {'RetroactiveHealth'}
+    [2] = {
+        RetroactiveHealth = function()
+            local oldSetting = modSettings.basicOld:get('RetroactiveHealth')
+            modSettings.health:set('RetroactiveHealth', oldSetting or false)
+        end,
+        RetroactiveStartHealth = function()
+            local oldSetting = modSettings.basicOld:get('RetroactiveStartHealth')
+            modSettings.health:set('RetroactiveStartHealth', oldSetting or false)
+        end,
+    },
+    [3] = {
+        BasicSettings = function()
+            for k, v in pairs(modSettings.basicOld:asTable()) do
+                modSettings.basic:set(k, v)
+            end
+        end,
+        AttributeCap = function()
+            local oldSetting = modSettings.basic:get('AttributeCap')
+            modSettings.basic:set('SharedAttributeCap', oldSetting or 100)
+        end,
+        UniqueAttributeCap = function()
+            local oldSetting = modSettings.basic:get('UniqueAttributeCap') 
+            if oldSetting == true then
+                modSettings.basic:set('AttributeCapMethod', 'UniqueCap')
+            elseif oldSetting == false then
+                modSettings.basic:set('AttributeCapMethod', 'SharedCap')
+            end
+        end
+    }
+}
+
+local settingsRemoved = {
+    [1] = {},
+    [2] = {},
+    [3] = {}
 }
 
 -- Save/load handlers
@@ -611,15 +656,18 @@ local function onLoad(data)
     -- Settings version was accidentally left out of 1.0.0
     data.settingsVersion = data.settingsVersion or 1
     if info.settingsVersion > (data.settingsVersion) then
-        local changeText = ''
+        local removedText = ''
         for i = data.settingsVersion + 1, info.settingsVersion, 1 do
-            for _, settingKey in pairs(settingsChanges[i]) do
-                changeText = changeText .. '\n' .. L(settingKey .. 'Name')
+            for _, settingKey in pairs(settingsRemoved[i]) do
+                removedText = removedText .. '\n' .. L(settingKey .. 'Name')
+            end
+            for _, migrateFunction in pairs(settingsMoved[i]) do
+                migrateFunction()
             end
         end
-        if changeText ~= '' then
-            ui.showMessage(L('SettingsVersionNew') .. changeText, {showInDialogue = false})
-            print(L('SettingsVersionNew') .. changeText) 
+        if removedText ~= '' then
+            ui.showMessage(L('SettingsVersionNew') .. removedText, {showInDialogue = false})
+            print(L('SettingsVersionNew') .. removedText) 
         end
     elseif info.settingsVersion < (data.settingsVersion) then
         ui.showMessage(L('SettingsVersionOld'), {showInDialogue = false})

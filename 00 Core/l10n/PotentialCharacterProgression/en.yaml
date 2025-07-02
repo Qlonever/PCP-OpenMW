@@ -1,6 +1,19 @@
 ModName: "Potential Character Progression"
 
+# Settings text
+
 PageName: "Potential Character Progression"
+
+StrengthAbbreviation: "STR"
+IntelligenceAbbreviation: "INT"
+WillpowerAbbreviation: "WIL"
+AgilityAbbreviation: "AGI"
+SpeedAbbreviation: "SPD"
+EnduranceAbbreviation: "END"
+PersonalityAbbreviation: "PER"
+LuckAbbreviation: "LUC"
+
+# Basic settings
 
 SettingsBasicName: "Basic Settings"
 
@@ -9,13 +22,22 @@ MenuKeyName: "Potential Menu Key"
 JailExploitName: "Allow Jail Time Exploit"
 JailExploitDesc: "If enabled, skill points lost in jail and then regained later will still contribute to potential and level-up progress."
 
-AttributeCapName: "Attribute Cap"
-AttributeCapDesc: "You cannot raise attributes above this value."
+AttributeCapMethodName: "Attribute Capping Method"
+AttributeCapMethodDesc: "Attributes have a configurable maximum value that they cannot be raised above. This setting decides whether attributes will share one maximum value, use differing maximums if they are favored, or use completely unique maximums."
 
-UniqueAttributeCapName: "Cap Attributes Individually"
-UniqueAttributeCapDesc: "If enabled, each attribute will have a configurable maximum value that it cannot be raised above."
+SharedCap: "Shared"
+FavoredCap: "Favored"
+UniqueCap: "Unique"
 
-UniqueAttributeCapValuesName: ""
+SharedAttributeCapName: "Shared Attribute Cap"
+
+FavoredAttributeCapName: "Favored Attribute Cap"
+
+UnfavoredAttributeCapName: "Unfavored Attribute Cap"
+
+UniqueAttributeCapValuesName: "Unique Attribute Caps"
+
+# Health settings
 
 SettingsHealthName: "Health Settings"
 SettingsHealthDesc: "These settings affect how the player's maximum health is calculated. By default, maximum health works the same as in vanilla Morrowind."
@@ -30,16 +52,18 @@ GradualRetroactiveHealthName: "Realistic Retroactive Health Gain"
 GradualRetroactiveHealthDesc: "If this and 'Retroactive Health Gain' are enabled, health gained from level-ups will be calculated as if relevant attributes had been raised to their current value as early as possible."
 
 GradualRetroactiveHealthIncrementName: "Realistic Retroactive Health Increment"
-GradualRetroactiveHealthIncrementDesc: "Calculations for 'Realistic Retroactive Health Gain' will assume that attributes were raised by this value each level."
+GradualRetroactiveHealthIncrementDesc: "Calculations for 'Realistic Retroactive Health Gain' will assume that attributes were raised by this value each level-up."
 
 CustomHealthName: "Custom Health Calculation"
 CustomHealthDesc: "If enabled, health will be calculated using a weighted average of attribute values instead of just endurance and strength."
 
 CustomHealthCoefficientsName: "Custom Health Coefficients"
-CustomHealthCoefficientsDesc: "If 'Custom Health Calculation' is enabled, health gain and starting health will be derived from this average:     (sum of (coeffs * attributes)) /            (sum of coeffs)"
+CustomHealthCoefficientsDesc: "If 'Custom Health Calculation' is enabled, health gain and starting health will be derived from this average:\n(sum of (coeffs * attributes)) /\n(sum of coeffs)"
 
 CustomGainMultiplierName: "Custom Health Gain Multiplier"
 CustomGainMultiplierDesc: "If 'Custom Health Calculation' is enabled, health gained from level-ups will be equal to the weighted average above multiplied by this value."
+
+# Balance settings
 
 SettingsBalanceName: "Balance Settings"
 SettingsBalanceDesc: "These settings will alter the balance of character progression. Be careful when changing them."
@@ -66,29 +90,28 @@ LevelProgressPerMinorSkillName: "Level Progress Per Minor Skill Increase"
 
 LevelProgressPerMajorSkillName: "Level Progress Per Major Skill Increase"
 
+# Skill settings
+
 SettingsSkillName: "Skill Settings"
 
 CustomSkillAttributesName: "Custom Skill-Attribute Assignment"
 CustomSkillAttributesDesc: "If enabled, skills can be configured to contribute towards different attributes' potential. Total potential gained from a skill increase will remain the same, but it will be divided between attributes by the adjustable ratios below."
+
+# Data settings
 
 SettingsDataName: "Data Settings"
 
 ClearDataName: "Clear Data"
 ClearDataDesc: "Clicking this button will reset the data used to track character progression, making it as if this mod had just been added to the save file. This should only be used in niche cases, like redoing character creation in an existing save."
 
+# Debug settings
+
 SettingsDebugName: "Debug Settings"
 
 DebugModeName: "Enable Debug Mode"
 DebugModeDesc: "If enabled, attributes can be raised or lowered freely from the potential menu."
 
-StrengthAbbreviation: "STR"
-IntelligenceAbbreviation: "INT"
-WillpowerAbbreviation: "WIL"
-AgilityAbbreviation: "AGI"
-SpeedAbbreviation: "SPD"
-EnduranceAbbreviation: "END"
-PersonalityAbbreviation: "PER"
-LuckAbbreviation: "LUC"
+# Notifications
 
 StartUp: "Your potential has started to develop. Press {keybind} at any time to check your potential and spend experience."
 
@@ -97,10 +120,12 @@ VersionOld: "[Potential Character Progression]: You are using an older mod versi
 SaveVersionNew: "[Potential Character Progression]: You have a newer mod version than the one previously used on this save file. Certain features may not work."
 SaveVersionOld: "[Potential Character Progression]: You have an older mod version than the one previously used on this save file. Character progression data may be lost."
 
-SettingsVersionNew: "[Potential Character Progression]: The following settings have changed since the previous version used by this save, and need to be set again:"
+SettingsVersionNew: "[Potential Character Progression]: The following settings have been removed since the previous version used by this save:"
 SettingsVersionOld: "[Potential Character Progression]: You have an older mod version than the one previously used on this save file. Certain settings may not have been carried over."
 
 UpdateOpenMW: "[Potential Character Progression]: This mod requires OpenMW version 0.49 or newer. The version you are using is out of date."
+
+# Menu text
 
 MenuExperience: "EXP: "
 
@@ -111,6 +136,8 @@ MenuUnused: "Unused potential and experience can be used later."
 MenuDistribute: "Auto-Distribute"
 
 MenuCount: "x"
+
+# Text-related UI dimensions
 
 ButtonConfirmSizeX: 41
 ButtonConfirmSizeY: 17
@@ -133,3 +160,11 @@ TooltipPersonalitySizeX: 429
 TooltipPersonalitySizeY: 32
 TooltipLuckSizeX: 314
 TooltipLuckSizeY: 16
+
+# Removed Text
+
+AttributeCapName: "Attribute Cap"
+AttributeCapDesc: "You cannot raise attributes above this value."
+
+UniqueAttributeCapName: "Cap Attributes Individually"
+UniqueAttributeCapDesc: "If enabled, each attribute will have a configurable maximum value that it cannot be raised above."
