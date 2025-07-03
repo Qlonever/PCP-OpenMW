@@ -18,10 +18,14 @@ local function capital(text)
     return text:gsub('^%l', string.upper)
 end
 
-local function disable(disabled, layout, collapse)
+local function disable(disabled, layout, darken, collapse)
     --Collapsible renderers would be nice, but currently resizing stuff breaks the settings page
     collapse = false
     if disabled then
+        local template = myui.templates.disabled
+        if darken then
+            template = I.MWUI.templates.disabled
+        end
         local disabledContent = nil
         if not collapse then 
             disabledContent = ui.content {
@@ -29,7 +33,7 @@ local function disable(disabled, layout, collapse)
                 }
         end
         return {
-            template = myui.templates.disabled,
+            template = template,
             content = disabledContent
         }
     else
@@ -143,7 +147,7 @@ I.Settings.registerRenderer(info.name .. 'Select', function(value, set, argument
             }
         }
     }
-    return disable(argument.disabled, rendererLayout, true)
+    return disable(argument.disabled, rendererLayout, true, true)
 end)
 
 -- Modified version of default number renderer
@@ -219,7 +223,7 @@ I.Settings.registerRenderer(info.name .. 'UniqueCaps', function(value, set, argu
     for i, attributeRecord in ipairs(core.stats.Attribute.records) do
         rendererLayout.content:add(createUniqueCapField(value, set, argument, attributeRecord.id))
     end
-    return disable(argument.disabled, rendererLayout, true)
+    return disable(argument.disabled, rendererLayout, false, true)
 end)
 
 -- Renderer for custom health coefficients
@@ -266,7 +270,7 @@ I.Settings.registerRenderer(info.name .. 'Coefficients', function(value, set, ar
         rendererLayout.content:add(createCoefficientField(value, set, argument, attributeRecord.id, first))
         first = nil
     end
-    return disable(argument.disabled, rendererLayout, true)
+    return disable(argument.disabled, rendererLayout, false, true)
 end)
 
 I.Settings.registerRenderer(info.name .. 'SkillAttributes', function(value, set, argument)
@@ -297,5 +301,5 @@ I.Settings.registerRenderer(info.name .. 'SkillAttributes', function(value, set,
         }
         rendererLayout.content.fieldsFlex.content:add(createAttributeField(value, set, argument, attributeRecord.id, v2(40, 18)))
     end
-    return disable(argument.disabled, rendererLayout, true)
+    return disable(argument.disabled, rendererLayout, false, true)
 end)

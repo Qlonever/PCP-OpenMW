@@ -23,7 +23,7 @@ JailExploitName: "Allow Jail Time Exploit"
 JailExploitDesc: "If enabled, skill points lost in jail and then regained later will still contribute to potential and level-up progress."
 
 AttributeCapMethodName: "Attribute Capping Method"
-AttributeCapMethodDesc: "Attributes have a configurable maximum value that they cannot be raised above. This setting decides whether attributes will share one maximum value, use differing maximums if they are favored, or use completely unique maximums."
+AttributeCapMethodDesc: "Attributes have a configurable maximum value that they cannot be raised above.\nThis setting decides whether attributes will share one maximum value, use differing maximums if they are favored, or use completely unique maximums."
 
 SharedCap: "Shared"
 FavoredCap: "Favored"
@@ -120,8 +120,8 @@ VersionOld: "[Potential Character Progression]: You are using an older mod versi
 SaveVersionNew: "[Potential Character Progression]: You have a newer mod version than the one previously used on this save file. Certain features may not work."
 SaveVersionOld: "[Potential Character Progression]: You have an older mod version than the one previously used on this save file. Character progression data may be lost."
 
-SettingsVersionNew: "[Potential Character Progression]: The following settings have been removed since the previous version used by this save:"
-SettingsVersionOld: "[Potential Character Progression]: You have an older mod version than the one previously used on this save file. Certain settings may not have been carried over."
+SettingsVersionNew: "[Potential Character Progression]: The following settings have been removed since the previous mod version used by this OpenMW installation:"
+SettingsVersionOld: "[Potential Character Progression]: You have an older mod version than the one previously used on this OpenMW installation. Certain settings may not have been carried over."
 
 UpdateOpenMW: "[Potential Character Progression]: This mod requires OpenMW version 0.49 or newer. The version you are using is out of date."
 

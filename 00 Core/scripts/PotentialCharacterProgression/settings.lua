@@ -9,18 +9,32 @@ local storage = require('openmw.storage')
 local info = require('scripts.PotentialCharacterProgression.info')
 local mwData = require('scripts.' .. info.name .. '.mwdata')
 
-local modSettings = {
-    basic = storage.playerSection('SettingsPlayer' .. info.name .. 'Basic'),
-    health = storage.playerSection('SettingsPlayer' .. info.name .. 'Health'),
-    skill = storage.playerSection('SettingsPlayer' .. info.name .. 'Skill')
-}
-
 local function sortAlphabetical(a, b)
     return a:lower() < b:lower()
 end
 
 local function capital(text)
     return text:gsub('^%l', string.upper)
+end
+
+local modSettings = {
+    basicOld = storage.playerSection('SettingsPlayer' .. info.name),
+    basic = storage.playerSection('SettingsPlayer' .. info.name .. 'Basic'),
+    health = storage.playerSection('SettingsPlayer' .. info.name .. 'Health'),
+    skill = storage.playerSection('SettingsPlayer' .. info.name .. 'Skill'),
+    version = storage.playerSection('SettingsPlayer' .. info.name .. 'Version')
+}
+
+-- Settings version was mistakenly not saved in storage until 1.1.0
+local storedSettingsVersion = modSettings.version:get('SettingsVersion')
+
+-- Since there were multiple settings versions not saved in storage, need to check specific values to determine which one
+if storedSettingsVersion == nil then
+    if modSettings.health:get('RetroactiveHealth') ~= nil then
+        storedSettingsVersion = 2
+    else
+        storedSettingsVersion = 1
+    end
 end
 
 -- Can only set defaults for vanilla attributes
@@ -46,65 +60,64 @@ I.Settings.registerPage {
 
 -- Something stupid to get around I.Settings.updateRendererArgument() replacing the entire table
 local dependentArguments = {
-    SharedAttributeCap = {
-        integer = true,
-        min = 0,
-        disabled = modSettings.basic:get('AttributeCapMethod') ~= 'SharedCap'
+    basic = {
+        SharedAttributeCap = {
+            integer = true,
+            min = 0
+        },
+        FavoredAttributeCap = {
+            integer = true,
+            min = 0
+        },
+        UnfavoredAttributeCap = {
+            integer = true,
+            min = 0
+        },
+        UniqueAttributeCapValues = {
+            integer = true,
+            min = 0,
+            max = nil
+        }
     },
-    FavoredAttributeCap = {
-        integer = true,
-        min = 0,
-        disabled = modSettings.basic:get('AttributeCapMethod') ~= 'FavoredCap'
+    health = {
+        RetroactiveStartHealth = {},
+        GradualRetroactiveHealth = {},
+        GradualRetroactiveHealthIncrement = {
+            integer = true,
+            min = 1,
+            max = nil
+        },
+        CustomHealthCoefficients = {
+            l10n = info.name,
+            integer = false,
+            min = nil,
+            max = nil
+        },
+        CustomGainMultiplier = {
+            integer = false,
+            min = 0,
+            max = nil
+        }
     },
-    UnfavoredAttributeCap = {
-        integer = true,
-        min = 0,
-        disabled = modSettings.basic:get('AttributeCapMethod') ~= 'FavoredCap'
-    },
-    UniqueAttributeCapValues = {
-        integer = true,
-        min = 0,
-        max = nil,
-        disabled = modSettings.basic:get('AttributeCapMethod') ~= 'UniqueCap'
-    },
-    RetroactiveStartHealth = {
-        disabled = not modSettings.health:get('RetroactiveHealth')
-    },
-    GradualRetroactiveHealth = {
-        disabled = not modSettings.health:get('RetroactiveHealth')
-    },
-    GradualRetroactiveHealthIncrement = {
-        integer = true,
-        min = 1,
-        max = nil,
-        disabled = not (modSettings.health:get('RetroactiveHealth') and modSettings.health:get('GradualRetroactiveHealth'))
-    },
-    CustomHealthCoefficients = {
-        l10n = info.name,
-        integer = false,
-        min = nil,
-        max = nil,
-        disabled = not modSettings.health:get('CustomHealth')
-    },
-    CustomGainMultiplier = {
-        integer = false,
-        min = 0,
-        max = nil,
-        disabled = not modSettings.health:get('CustomHealth')
-    }
+    skill = {}
 }
 
 -- Dependent settings must belong to the same section as the settings they depend on
 local dependentSettings = {
-    SharedAttributeCap = {AttributeCapMethod = 'SharedCap'},
-    FavoredAttributeCap = {AttributeCapMethod = 'FavoredCap'},
-    UnfavoredAttributeCap = {AttributeCapMethod = 'FavoredCap'},
-    UniqueAttributeCapValues = {AttributeCapMethod = 'UniqueCap'},
-    RetroactiveStartHealth = {RetroactiveHealth = true},
-    GradualRetroactiveHealth = {RetroactiveHealth = true},
-    GradualRetroactiveHealthIncrement = {RetroactiveHealth = true, GradualRetroactiveHealth = true},
-    CustomHealthCoefficients = {CustomHealth = true},
-    CustomGainMultiplier = {CustomHealth = true}
+    basic = {
+        SharedAttributeCap = {AttributeCapMethod = 'SharedCap'},
+        FavoredAttributeCap = {AttributeCapMethod = 'FavoredCap'},
+        UnfavoredAttributeCap = {AttributeCapMethod = 'FavoredCap'},
+        UniqueAttributeCapValues = {AttributeCapMethod = 'UniqueCap'}
+    },
+    health = {
+        RetroactiveStartHealth = {RetroactiveHealth = true},
+        GradualRetroactiveHealth = {RetroactiveHealth = true},
+        GradualRetroactiveHealthIncrement = {RetroactiveHealth = true, GradualRetroactiveHealth = true},
+        CustomHealthCoefficients = {CustomHealth = true},
+        CustomGainMultiplier = {CustomHealth = true}
+    },
+    skill = {}
 }
 
 -- Basic settings
@@ -146,21 +159,21 @@ I.Settings.registerGroup {
             renderer = 'number',
             name = 'SharedAttributeCapName',
             default = 100,
-            argument = dependentArguments.SharedAttributeCap
+            argument = dependentArguments.basic.SharedAttributeCap
         },
         {
             key = 'FavoredAttributeCap',
             renderer = 'number',
             name = 'FavoredAttributeCapName',
             default = 100,
-            argument = dependentArguments.FavoredAttributeCap
+            argument = dependentArguments.basic.FavoredAttributeCap
         },
         {
             key = 'UnfavoredAttributeCap',
             renderer = 'number',
             name = 'UnfavoredAttributeCapName',
             default = 100,
-            argument = dependentArguments.UnfavoredAttributeCap
+            argument = dependentArguments.basic.UnfavoredAttributeCap
         },
         {
             key = 'UniqueAttributeCapValues',
@@ -178,7 +191,7 @@ I.Settings.registerGroup {
                     luck = 100
                 }, 
                 100),
-            argument = dependentArguments.UniqueAttributeCapValues
+            argument = dependentArguments.basic.UniqueAttributeCapValues
         }
     }
 }
@@ -207,7 +220,7 @@ I.Settings.registerGroup {
             name = 'RetroactiveStartHealthName',
             description = 'RetroactiveStartHealthDesc',
             default = false,
-            argument = dependentArguments.RetroactiveStartHealth
+            argument = dependentArguments.health.RetroactiveStartHealth
         },
         {
             key = 'GradualRetroactiveHealth',
@@ -215,7 +228,7 @@ I.Settings.registerGroup {
             name = 'GradualRetroactiveHealthName',
             description = 'GradualRetroactiveHealthDesc',
             default = false,
-            argument = dependentArguments.GradualRetroactiveHealth
+            argument = dependentArguments.health.GradualRetroactiveHealth
         },
         {
             key = 'GradualRetroactiveHealthIncrement',
@@ -223,7 +236,7 @@ I.Settings.registerGroup {
             name = 'GradualRetroactiveHealthIncrementName',
             description = 'GradualRetroactiveHealthIncrementDesc',
             default = 5,
-            argument = dependentArguments.GradualRetroactiveHealthIncrement
+            argument = dependentArguments.health.GradualRetroactiveHealthIncrement
         },
         {
             key = 'CustomHealth',
@@ -249,7 +262,7 @@ I.Settings.registerGroup {
                     luck = 0
                 }, 
                 0),
-            argument = dependentArguments.CustomHealthCoefficients
+            argument = dependentArguments.health.CustomHealthCoefficients
         },
         {
             key = 'CustomGainMultiplier',
@@ -257,7 +270,7 @@ I.Settings.registerGroup {
             name = 'CustomGainMultiplierName',
             description = 'CustomGainMultiplierDesc',
             default = 0.1,
-            argument = dependentArguments.CustomGainMultiplier
+            argument = dependentArguments.health.CustomGainMultiplier
         }
     }
 }
@@ -434,14 +447,14 @@ end
 table.sort(skillList, sortAlphabetical)
 
 for i, skillId in ipairs(skillList) do
-    dependentArguments[capital(skillId) .. 'Attributes'] = {l10n = info.name, integer = false, min = 0, max = nil, disabled = not modSettings.skill:get('CustomSkillAttributes')}
-    dependentSettings[capital(skillId) .. 'Attributes'] = {CustomSkillAttributes = true}
+    dependentArguments.skill[capital(skillId) .. 'Attributes'] = {l10n = info.name, integer = false, min = 0, max = nil}
+    dependentSettings.skill[capital(skillId) .. 'Attributes'] = {CustomSkillAttributes = true}
     table.insert(skillSettings, {
         key = capital(skillId) .. 'Attributes',
         renderer = info.name .. 'SkillAttributes',
         name = core.stats.Skill.record(skillId).name .. '  ',
         default = populateAttributes(skillDefaults[skillId] or {}, 0),
-        argument = dependentArguments[capital(skillId) .. 'Attributes']
+        argument = dependentArguments.skill[capital(skillId) .. 'Attributes']
     })
 end
 
@@ -503,33 +516,110 @@ I.Settings.registerGroup {
 -- Need to search this data from both directions
 -- Automatically construct a reversed table
 local dependedSettings = {}
-for dependentKey, dependedKeys in pairs(dependentSettings) do
-    for dependedKey, _ in pairs(dependedKeys) do
-        if dependedSettings[dependedKey] ~= nil then
-            table.insert(dependedSettings[dependedKey], dependentKey)
-        else
-            dependedSettings[dependedKey] = {dependentKey}
+for groupName, dependentKeys in pairs(dependentSettings) do
+    dependedSettings[groupName] = {}
+    for dependentKey, dependedKeys in pairs(dependentKeys) do
+        for dependedKey, _ in pairs(dependedKeys) do
+            if dependedSettings[groupName][dependedKey] ~= nil then
+                table.insert(dependedSettings[groupName][dependedKey], dependentKey)
+            else
+                dependedSettings[groupName][dependedKey] = {dependentKey}
+            end
         end
     end
 end
 
-local dependentCallback = async:callback(function(sectionKey, changedKey)
-    if changedKey ~= nil and dependedSettings[changedKey] ~= nil then
-        local groupName = sectionKey:gsub('SettingsPlayer' .. info.name, ''):lower()
-        for _, dependentKey in pairs(dependedSettings[changedKey]) do
+local function dependentFunction(sectionKey, changedKey)
+    local groupName = sectionKey:gsub('SettingsPlayer' .. info.name, ''):lower()
+    if changedKey ~= nil and dependedSettings[groupName][changedKey] ~= nil then
+        for _, dependentKey in pairs(dependedSettings[groupName][changedKey]) do
             local disabled = false
-            for dependedKey, value in pairs(dependentSettings[dependentKey]) do
+            for dependedKey, value in pairs(dependentSettings[groupName][dependentKey]) do
                 if modSettings[groupName]:get(dependedKey) ~= value then
                     disabled = true
                 end
             end
-            local argument = dependentArguments[dependentKey]
+            local argument = dependentArguments[groupName][dependentKey]
             argument.disabled = disabled
             I.Settings.updateRendererArgument(sectionKey, dependentKey, argument)
         end
     end
-end)
+end
+
+local dependentCallback = async:callback(dependentFunction)
+
+-- Initialize disabled state of dependent settings
+for groupName, dependedKeys in pairs(dependedSettings) do
+    local sectionKey = 'SettingsPlayer' .. info.name .. capital(groupName) 
+    for dependedKey, _ in pairs(dependedKeys) do
+        dependentFunction(sectionKey, dependedKey)
+    end
+end
 
 modSettings.basic:subscribe(dependentCallback)
 modSettings.health:subscribe(dependentCallback)
 modSettings.skill:subscribe(dependentCallback)
+
+-- Lists of moved/removed settings for each settings version
+-- Used to migrate old setting values/inform player when a setting was removed
+
+-- Settings to be migrated are not assumed to exist
+local settingsMoved = {
+    [1] = {},
+    [2] = {
+        RetroactiveHealth = function()
+            local oldSetting = modSettings.basicOld:get('RetroactiveHealth')
+            modSettings.health:set('RetroactiveHealth', oldSetting or false)
+        end,
+        RetroactiveStartHealth = function()
+            local oldSetting = modSettings.basicOld:get('RetroactiveStartHealth')
+            modSettings.health:set('RetroactiveStartHealth', oldSetting or false)
+        end,
+    },
+    [3] = {
+        BasicSettings = function()
+            for k, v in pairs(modSettings.basicOld:asTable()) do
+                modSettings.basic:set(k, v)
+            end
+        end,
+        AttributeCap = function()
+            local oldSetting = modSettings.basic:get('AttributeCap')
+            modSettings.basic:set('SharedAttributeCap', oldSetting or 100)
+        end,
+        UniqueAttributeCap = function()
+            local oldSetting = modSettings.basic:get('UniqueAttributeCap') 
+            if oldSetting == true then
+                modSettings.basic:set('AttributeCapMethod', 'UniqueCap')
+            elseif oldSetting == false then
+                modSettings.basic:set('AttributeCapMethod', 'SharedCap')
+            end
+        end
+    }
+}
+
+local settingsRemoved = {
+    [1] = {},
+    [2] = {},
+    [3] = {}
+}
+
+if info.settingsVersion > (storedSettingsVersion) then
+    local removedText = ''
+    for i = storedSettingsVersion + 1, info.settingsVersion, 1 do
+        for _, settingKey in pairs(settingsRemoved[i]) do
+            removedText = removedText .. '\n' .. L(settingKey .. 'Name')
+        end
+        for _, migrateFunction in pairs(settingsMoved[i]) do
+            migrateFunction()
+        end
+    end
+    if removedText ~= '' then
+        ui.showMessage(L('SettingsVersionNew') .. removedText, {showInDialogue = false})
+        print(L('SettingsVersionNew') .. removedText) 
+    end
+elseif info.settingsVersion < (storedSettingsVersion) then
+    ui.showMessage(L('SettingsVersionOld'), {showInDialogue = false})
+    print(L('SettingsVersionOld'))
+end
+
+modSettings.version:set('SettingsVersion', info.settingsVersion)

@@ -8,6 +8,10 @@ local util = require('openmw.util')
 
 local v2 = util.vector2
 
+-- Templates
+
+templates = {}
+
 -- Container/border templates for text buttons
 
 local sideParts = {
@@ -151,12 +155,11 @@ buttonTemplates.boxButton.content:add {
     }
 }
 
-templates = {}
-
 for k, t in pairs(buttonTemplates) do
     templates[k] = t
 end
 
+-- Custom disabled template for settings renderers that look bad with a dark overlay
 templates.disabled = {
     type = ui.TYPE.Container,
     props = {
@@ -170,17 +173,7 @@ templates.disabled = {
             external = {
                 slot = true
             }
-        },
-        --[[
-        {
-            type = ui.TYPE.Image,
-            props = {
-                resource = constants.whiteTexture,
-                color = util.color.rgb(0, 0, 0),
-                relativeSize = util.vector2(1, 1)
-            }
         }
-        --]]
     }
 }
 
@@ -357,7 +350,7 @@ local function createTextButton(parent, buttonText, color, name, properties, but
                                 name = 'text',
                                 type = ui.TYPE.Text,
                                 template = I.MWUI.templates.textNormal,
-                                props = { text = buttonText, textColor = buttonColors.default }
+                                props = {text = buttonText, textColor = buttonColors.default}
                             },
                             {
                                 name = 'padding',
@@ -415,7 +408,7 @@ local function createTextButton(parent, buttonText, color, name, properties, siz
                                 name = 'text',
                                 type = ui.TYPE.Text,
                                 template = I.MWUI.templates.textNormal,
-                                props = { text = buttonText, textColor = buttonColors.default }
+                                props = {text = buttonText, textColor = buttonColors.default}
                             },
                             {
                                 name = 'padding',

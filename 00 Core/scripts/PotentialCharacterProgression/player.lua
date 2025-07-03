@@ -19,8 +19,6 @@ local types = require('openmw.types')
 local ui = require('openmw.ui')
 local util = require('openmw.util')
 
-local Player = types.Player
-
 local mwData = require('scripts.' .. info.name .. '.mwdata')
 local PCPui = require('scripts.' .. info.name .. '.ui')
 local settings = require('scripts.' .. info.name .. '.settings')
@@ -38,6 +36,24 @@ local function capital(text)
     return text:gsub('^%l', string.upper)
 end
 
+-- Player data
+
+local Player = types.Player
+
+local playerStats = Player.stats
+local playerHealth = playerStats.dynamic.health
+local playerAttributes = playerStats.attributes
+local playerSkills = playerStats.skills
+
+local function getPlayerRecords()
+    local playerRecord = Player.record(self)
+    return {
+        class = Player.classes.record(playerRecord.class),
+        race = Player.races.record(playerRecord.race),
+        sex = (playerRecord.isMale and 'male') or 'female'
+    }
+end
+
 -- Mod compatibility -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
 -- Custom Skill Caps
@@ -51,10 +67,20 @@ end
 -- Get maximum value for skill depending on settings
 local function getSkillCap(skillId)
     if CSCSettings.basic ~= nil then
-        if CSCSettings.basic:get('UniqueSkillCap') then
-            return CSCSettings.basic:get(capital(skillId) .. 'Cap')
-        else
-            return CSCSettings.basic:get('SkillCap')
+        capMethod = CSCSettings.basic:get('SkillCapMethod')
+        if capMethod == 'SharedCap' then
+            return CSCSettings.basic:get('SharedSkillCap')
+        elseif capMethod == 'ClassCap' then
+            local playerRecords = getPlayerRecords()
+            if contains(playerRecords.class.majorSkills, skillid) then
+                return CSCSettings.basic:get('MajorSkillCap')
+            elseif contains(playerRecords.class.minorSkills, skillid) then
+                return CSCSettings.basic:get('MinorSkillCap')
+            else
+                return CSCSettings.basic:get('MiscSkillCap')
+            end
+        elseif capMethod == 'UniqueCap' then
+            return CSCSettings.basic:get(capital(skillid) .. 'Cap')
         end
     else
         return 100
@@ -72,7 +98,6 @@ end
 -- Mod settings
 
 local modSettings = {
-    basicOld = storage.playerSection('SettingsPlayer' .. info.name),
     basic = storage.playerSection('SettingsPlayer' .. info.name .. 'Basic'),
     health = storage.playerSection('SettingsPlayer' .. info.name .. 'Health'),
     balance = storage.playerSection('SettingsPlayer' .. info.name .. 'Balance'),
@@ -86,22 +111,6 @@ local healthSettings = {}
 
 local skillUpsPerLevel = core.getGMST('iLevelupTotal')
 local levelHealthMult = core.getGMST('fLevelUpHealthEndMult')
-
--- Player data
-
-local playerStats = Player.stats
-local playerHealth = playerStats.dynamic.health
-local playerAttributes = playerStats.attributes
-local playerSkills = playerStats.skills
-
-local function getPlayerRecords()
-    local playerRecord = Player.record(self)
-    return {
-        class = Player.classes.record(playerRecord.class),
-        race = Player.races.record(playerRecord.race),
-        sex = (playerRecord.isMale and 'male') or 'female'
-    }
-end
 
 -- Saved variables
 
@@ -605,75 +614,10 @@ local function onKeyPress(key)
     end
 end
 
--- Lists of moved/removed settings for each settings version
--- Used to migrate old setting values/inform player when a setting was removed
-
--- Functions for migrating settings
--- Settings to be migrated are not assumed to exist
-local settingsMoved = {
-    [1] = {},
-    [2] = {
-        RetroactiveHealth = function()
-            local oldSetting = modSettings.basicOld:get('RetroactiveHealth')
-            modSettings.health:set('RetroactiveHealth', oldSetting or false)
-        end,
-        RetroactiveStartHealth = function()
-            local oldSetting = modSettings.basicOld:get('RetroactiveStartHealth')
-            modSettings.health:set('RetroactiveStartHealth', oldSetting or false)
-        end,
-    },
-    [3] = {
-        BasicSettings = function()
-            for k, v in pairs(modSettings.basicOld:asTable()) do
-                modSettings.basic:set(k, v)
-            end
-        end,
-        AttributeCap = function()
-            local oldSetting = modSettings.basic:get('AttributeCap')
-            modSettings.basic:set('SharedAttributeCap', oldSetting or 100)
-        end,
-        UniqueAttributeCap = function()
-            local oldSetting = modSettings.basic:get('UniqueAttributeCap') 
-            if oldSetting == true then
-                modSettings.basic:set('AttributeCapMethod', 'UniqueCap')
-            elseif oldSetting == false then
-                modSettings.basic:set('AttributeCapMethod', 'SharedCap')
-            end
-        end
-    }
-}
-
-local settingsRemoved = {
-    [1] = {},
-    [2] = {},
-    [3] = {}
-}
-
 -- Save/load handlers
 
 local function onLoad(data)
-    -- Include values in save data to track breaking changes
-    -- Settings version was accidentally left out of 1.0.0
-    data.settingsVersion = data.settingsVersion or 1
-    if info.settingsVersion > (data.settingsVersion) then
-        local removedText = ''
-        for i = data.settingsVersion + 1, info.settingsVersion, 1 do
-            for _, settingKey in pairs(settingsRemoved[i]) do
-                removedText = removedText .. '\n' .. L(settingKey .. 'Name')
-            end
-            for _, migrateFunction in pairs(settingsMoved[i]) do
-                migrateFunction()
-            end
-        end
-        if removedText ~= '' then
-            ui.showMessage(L('SettingsVersionNew') .. removedText, {showInDialogue = false})
-            print(L('SettingsVersionNew') .. removedText) 
-        end
-    elseif info.settingsVersion < (data.settingsVersion) then
-        ui.showMessage(L('SettingsVersionOld'), {showInDialogue = false})
-        print(L('SettingsVersionOld'))
-    end
-
+    -- Include version in save data to track breaking changes
     if info.saveVersion > data.saveVersion then
         ui.showMessage(L('SaveVersionNew'), {showInDialogue = false})
         print(L('SaveVersionNew'))

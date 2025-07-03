@@ -178,6 +178,10 @@ Anything that changes the level-up process likely won't work with PCP, but mods 
 PCP can be added to an existing save without issues, but retroactive health calculations won't account for level-ups performed prior to installing it.
 ### Known Issues
 Currently, the potential menu can't be bound to controller buttons; this is because the setting uses a custom format. This will be fixed when the built-in binding functions support default bindings and allow bindings to be read.
+
+MWscripts or console commands using modattribute functions can't increase attributes past 100, even with this mod installed.
+
+If you encounter any bugs, please create an issue or inform me some other way.
 ### Updating
 Updating this mod on an existing save shouldn't pose any major problems. A message will appear in-game if there are any issues.
 
@@ -187,7 +191,7 @@ Author: Qlonever
 Special thanks to everyone in the OpenMW Discord server who answered my Lua modding questions, especially S3ctor.
 Additional thanks to the creators of NCGDMW Lua for letting me use some of their settings as defaults in PCP. (https://www.nexusmods.com/morrowind/mods/53136)
 
-## Source
-This mod can be found on Github: https://github.com/Qlonever/PCP-OpenMW
+## Other Sources
+This mod can be found on Nexus Mods: https://github.com/Qlonever/PCP-OpenMW
 
-Updates there will be smaller and more frequent.
+Numbered releases will be uploaded there.

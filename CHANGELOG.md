@@ -36,3 +36,5 @@
 - Fixed several issues with settings UI
 - Fixed a bug when using or increasing an already maxed skill
 - Fixed an issue with attribute multiplier values when removing PCP from a save
+- Fixed an issue with settings version detection
+- Fixed an issue with dependent settings not properly initializing
