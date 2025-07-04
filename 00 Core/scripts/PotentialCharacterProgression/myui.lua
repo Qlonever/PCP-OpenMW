@@ -270,6 +270,7 @@ local textColors = {
 }
 
 -- Shared code for making button layouts
+-- TODO: Make this unable to be pressed multiple times per frame
 local function createButton(parent, layout, updateColor, buttonFunction, args)
     layout.events = { 
         mousePress = async:callback(function(mouseEvent, data)

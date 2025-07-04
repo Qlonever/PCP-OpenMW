@@ -23,7 +23,7 @@ JailExploitName: "Allow Jail Time Exploit"
 JailExploitDesc: "If enabled, skill points lost in jail and then regained later will still contribute to potential and level-up progress."
 
 AttributeCapMethodName: "Attribute Capping Method"
-AttributeCapMethodDesc: "Attributes have a configurable maximum value that they cannot be raised above.\nThis setting decides whether attributes will share one maximum value, use differing maximums if they are favored, or use completely unique maximums."
+AttributeCapMethodDesc: "Attributes have a configurable maximum value that they cannot be raised above. If set to 0, the corresponding attribute can be raised infinitely.\nThis setting decides whether attributes will share one maximum value, use differing maximums if they are favored, or use completely unique maximums."
 
 SharedCap: "Shared"
 FavoredCap: "Favored"

@@ -29,7 +29,9 @@ This key opens up the potential menu, where you can check and use your potential
 ### Allow Jail Time Exploit
 If enabled, skill points lost in jail and then regained later will still contribute to potential and level-up progress. (Default: OFF)
 ### Attribute Capping Method
-Attributes have a configurable maximum value that they cannot be raised above. This setting decides whether attributes will share one maximum value, use differing maximums if they are favored, or use completely unique maximums. (Default: Shared)
+Attributes have a configurable maximum value that they cannot be raised above. If set to 0, the corresponding attribute can be raised infinitely
+
+This setting decides whether attributes will share one maximum value, use differing maximums if they are favored, or use completely unique maximums. (Default: Shared)
 ### Shared/Favored/Unfavored/Unique Attribute Caps
 (Default: All 100)
 </Details>
@@ -189,9 +191,10 @@ Updating this mod on an existing save shouldn't pose any major problems. A messa
 Author: Qlonever
 
 Special thanks to everyone in the OpenMW Discord server who answered my Lua modding questions, especially S3ctor.
+
 Additional thanks to the creators of NCGDMW Lua for letting me use some of their settings as defaults in PCP. (https://www.nexusmods.com/morrowind/mods/53136)
 
 ## Other Sources
-This mod can be found on Nexus Mods: https://github.com/Qlonever/PCP-OpenMW
+This mod can be found on Nexus Mods: https://www.nexusmods.com/morrowind/mods/55264
 
 Numbered releases will be uploaded there.

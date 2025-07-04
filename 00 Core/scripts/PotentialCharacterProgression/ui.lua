@@ -84,6 +84,7 @@ end
 
 local uiAttributes = {}
 local uiExperience = 0
+local uiConfirmed = true
 local uiDistributed = false
 
 -- Menu elements
@@ -320,7 +321,7 @@ local levelInfoFlex = {
                 }
             }
         },
-        myui.padWidget(8,0),
+        myui.padWidget(10,0),
         {
             name = 'progressBar',
             type = ui.TYPE.Container,
@@ -398,7 +399,7 @@ local menuLayout = {
                                     name = 'unusedText',
                                     type = ui.TYPE.Text,
                                     template = I.MWUI.templates.textNormal,
-                                    props = {text = L('MenuUnused'), wordWrap = true, autoSize = false, size = v2(212, 32)}
+                                    props = {text = L('MenuUnused'), wordWrap = true, autoSize = false, size = v2(214, 32)}
                                 },
                                 myui.padWidget(0,12),
                                 actionsFlex
@@ -488,7 +489,7 @@ local function modifyAttributeRow(attributeId, isOrigin)
         changed.exp = true
 
         -- Color attribute potential, don't bother if debug mode is enabled or base is already above cap
-        if not (debugMode or attribute.base > attribute.cap) then
+        if not (debugMode or (attribute.cap > 0 and attribute.base > attribute.cap)) then
             local diff = math.floor(attribute.potential) - attribute.ups
 
             local potentialColor = myui.interactiveTextColors.normal.default
@@ -517,10 +518,10 @@ local function modifyAttributeRow(attributeId, isOrigin)
 
     -- Enable/disable attribute increment button
     local cost = expCost(attribute.isFavored, attribute.ups + 1 > attribute.potential)
-    if (cost > uiExperience or attribute.base + attribute.ups + 1 > attribute.cap) and not uiColumns.attributeIncs.layout.content[attributeId].content[attributeId].userData.isDisabled then
+    if (cost > uiExperience or (attribute.cap > 0 and attribute.base + attribute.ups + 1 > attribute.cap)) and not uiColumns.attributeIncs.layout.content[attributeId].content[attributeId].userData.isDisabled then
         myui.disableWidget(uiColumns.attributeIncs.layout.content[attributeId].content[attributeId])
         changed.inc = true
-    elseif cost <= uiExperience and attribute.base + attribute.ups + 1 <= attribute.cap and uiColumns.attributeIncs.layout.content[attributeId].content[attributeId].userData.isDisabled then
+    elseif cost <= uiExperience and (attribute.cap == 0 or attribute.base + attribute.ups + 1 <= attribute.cap) and uiColumns.attributeIncs.layout.content[attributeId].content[attributeId].userData.isDisabled then
         myui.enableWidget(uiColumns.attributeIncs.layout.content[attributeId].content[attributeId])
         changed.inc = true
     end
@@ -610,6 +611,9 @@ end
 
 -- Close the menu, forwarding changes to the main script
 local function confirmMenu()
+    -- Prevents duplicate confirm events if the player clicks very fast
+    if uiConfirmed then return end
+    uiConfirmed = true
     self:sendEvent(info.name .. 'FinishMenu', {uiAttributes = uiAttributes, uiExperience = uiExperience, debugMode = debugMode})
 end
 
@@ -643,6 +647,7 @@ end
 local function createMenu(levelUpData, attributeData, experience)
     uiExperience = experience
 
+    uiConfirmed = false
     uiDistributed = false
 
     -- Can't read this when the script first loads if the player doesn't have a class yet
@@ -679,7 +684,7 @@ local function createMenu(levelUpData, attributeData, experience)
         attributeExp = ui.create{name = 'attributeExp', type = ui.TYPE.Flex, content = ui.content{myui.padWidget(44,0)}},
         attributeNames = {name = 'attributeNames', type = ui.TYPE.Flex, content = ui.content{}},
         attributeDecs = ui.create{name = 'attributeDecs', type = ui.TYPE.Flex, content = ui.content{}},
-        attributeNums = ui.create{name = 'attributeNums', type = ui.TYPE.Flex, props = {arrange = ui.ALIGNMENT.End }, content = ui.content{myui.padWidget(30,0)}},
+        attributeNums = ui.create{name = 'attributeNums', type = ui.TYPE.Flex, props = {arrange = ui.ALIGNMENT.End }, content = ui.content{myui.padWidget(32,0)}},
         attributeIncs = ui.create{name = 'attributeIncs', type = ui.TYPE.Flex, content = ui.content{}},
         attributePotsInt = {name = 'attributePotsInt', type = ui.TYPE.Flex, props = {arrange = ui.ALIGNMENT.End}, content = ui.content{}},
         attributePotsFrac = {name = 'attributePotsFrac', type = ui.TYPE.Flex, content = ui.content{}}
@@ -709,7 +714,10 @@ local function createMenu(levelUpData, attributeData, experience)
 
         attribute.experience = 0
         attribute.base = Player.stats.attributes[attributeId](self).base
-        attribute.potential = math.min(attributeData[attributeRecord.id].potential, attribute.cap - attribute.base)
+        attribute.potential = attributeData[attributeRecord.id].potential
+        if attribute.cap > 0 then
+            attribute.potential = math.min(attribute.potential, attribute.cap - attribute.base)
+        end
         attribute.ups = 0
 
         -- EXP spent indicator
@@ -925,8 +933,9 @@ local function createMenu(levelUpData, attributeData, experience)
     if levelUpData then
         menuLayout.content.padding.content.mainFlex.content.interactiveFlex.content[3] = {}
         levelUpLayout.content.levelFlex.content.ascendText.props.text = ascendText .. levelUpData.level
-        if levelUpData.level > 1 and levelUpData.level < 21 then
-            levelUpLayout.content.levelFlex.content.levelUpText.props.text = core.getGMST('Level_Up_Level' .. levelUpData.level)
+        local levelUpText = core.getGMST('Level_Up_Level' .. levelUpData.level)
+        if levelUpText ~= nil then
+            levelUpLayout.content.levelFlex.content.levelUpText.props.text = levelUpText
         else
             levelUpLayout.content.levelFlex.content.levelUpText.props.text = levelUpTextDefault
         end

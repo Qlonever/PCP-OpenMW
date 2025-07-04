@@ -246,7 +246,7 @@ local function createCoefficientField(value, set, argument, attributeId, first)
             {
                 type = ui.TYPE.Text,
                 template = I.MWUI.templates.textNormal,
-                props = {text = L(capital(attributeId) .. 'Abbreviation'), textAlignH = ui.ALIGNMENT.Center, autoSize = false, size = v2(35, 16)}
+                props = {text = L(capital(attributeId) .. 'Abbreviation'), textAlignH = ui.ALIGNMENT.Center, autoSize = false, size = v2(40, 16)}
             },
             {
                 type = ui.TYPE.Text,

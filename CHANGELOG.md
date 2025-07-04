@@ -26,12 +26,13 @@
 - Added a new setting: "Realistic Retroactive Health Gain"
 - Added new settings: "Favored/Unfavored Attribute Cap"
 - Added new settings: "Level Progress Per Misc./Minor/Major Skill Increase"
+- Added support for level-up messages past 21
 - Added a function to clear progression data from a save file
 - Added code to grant potential for prior skill increases when adding PCP to a save
 - Added code to automatically migrate certain settings values
 - Added more specific notifications for settings being removed by updates
 - Tweaked descriptions for some settings
-- Tweaked UI to display up to four decimal digits for attribute potentials
+- Tweaked dimensions of elements in the potential menu
 - Exposed some hardcoded UI dimensions to localizations
 - Fixed several issues with settings UI
 - Fixed a bug when using or increasing an already maxed skill

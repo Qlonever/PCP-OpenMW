@@ -219,6 +219,7 @@ modSettings.data:subscribe(async:callback(function(section, key)
         experience = 0
         totalHealthGained = 0
         totalSkillUpsCurLevel = 0
+        existingSave = true
         isCharGenFinished = false
     end
 end))
@@ -500,8 +501,9 @@ local function handleskillUps(skillId, source, options)
         -- Also account for built-in handlers fraudulently triggering skillLevelUps
         local skillBase = playerSkills[skillId](self).base
         local skillNewBase = options.skillIncreaseValue + skillBase
-        if getSkillCap(skillId) ~= 0 then
-            skillNewBase = math.min(skillNewBase, getSkillCap(skillId))
+        local skillCap = getSkillCap(skillId)
+        if skillCap > 0 then
+            skillNewBase = math.min(skillNewBase, skillCap)
         end
         if not modSettings.basic:get('JailExploit') then
             skillBase = math.max(skillBase, skillData[skillId].peak)
