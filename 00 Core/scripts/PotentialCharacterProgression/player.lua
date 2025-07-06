@@ -72,15 +72,15 @@ local function getSkillCap(skillId)
             return CSCSettings.basic:get('SharedSkillCap')
         elseif capMethod == 'ClassCap' then
             local playerRecords = getPlayerRecords()
-            if contains(playerRecords.class.majorSkills, skillid) then
+            if contains(playerRecords.class.majorSkills, skillId) then
                 return CSCSettings.basic:get('MajorSkillCap')
-            elseif contains(playerRecords.class.minorSkills, skillid) then
+            elseif contains(playerRecords.class.minorSkills, skillId) then
                 return CSCSettings.basic:get('MinorSkillCap')
             else
                 return CSCSettings.basic:get('MiscSkillCap')
             end
         elseif capMethod == 'UniqueCap' then
-            return CSCSettings.basic:get(capital(skillid) .. 'Cap')
+            return CSCSettings.basic:get(capital(skillId) .. 'Cap')
         end
     else
         return 100

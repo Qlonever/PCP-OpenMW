@@ -39,3 +39,6 @@
 - Fixed an issue with attribute multiplier values when removing PCP from a save
 - Fixed an issue with settings version detection
 - Fixed an issue with dependent settings not properly initializing
+
+## 1.1.0
+- Fixed a bug preventing skills from increasing when Custom Skill Caps is installed

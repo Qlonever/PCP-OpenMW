@@ -87,7 +87,7 @@ These settings will alter the balance of character progression. Be careful when 
 <Summary>Skill Settings</Summary>
 
 ### Custom Skill-Attribute Assignment
-If enabled, skills can be configured to contribute towards different attributes' potential. Total potential gained from a skill increase will remain the same, but it will be divided between attributes by the adjustable ratios below. (DEFAULT: OFF)
+If enabled, skills can be configured to contribute towards different attributes' potential. Total potential gained from a skill increase will remain the same, but it will be divided between attributes by the adjustable ratios below. (Default: OFF)
 
 #### Acrobatics
 STR 3 / INT 0 / WIL 0 / AGI 1 / SPD 2 / END 1 / PER 0 / LUC 1
@@ -177,6 +177,7 @@ content=PotentialCharacterProgression.omwscripts
 PCP requires OpenMW version 0.49 or later. If your version is too old, a warning will appear in the log. (Press F10 or check openmw.log)
 ### Compatibility
 Anything that changes the level-up process likely won't work with PCP, but mods that occasionally increase/decrease attributes outside of level-ups are fine. Mods changing character creation or skill progression should work too. Specifically, Custom Skill Caps (https://github.com/Qlonever/CSC-OpenMW) is compatible with PCP.
+
 PCP can be added to an existing save without issues, but retroactive health calculations won't account for level-ups performed prior to installing it.
 ### Known Issues
 Currently, the potential menu can't be bound to controller buttons; this is because the setting uses a custom format. This will be fixed when the built-in binding functions support default bindings and allow bindings to be read.
