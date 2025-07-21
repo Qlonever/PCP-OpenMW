@@ -40,5 +40,6 @@
 - Fixed an issue with settings version detection
 - Fixed an issue with dependent settings not properly initializing
 
-## 1.1.0
+## 1.1.1
 - Fixed a bug preventing skills from increasing when Custom Skill Caps is installed
+- Fixed "Clear Data" button text not being in localization files

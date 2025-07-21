@@ -43,6 +43,7 @@ end
 
 -- A renderer for triggering functions in player scripts rather than changing settings
 I.Settings.registerRenderer(info.name .. 'Button', function(value, set, argument)
+    local L = core.l10n(argument.l10n)
     local rendererLayout = {
         type = ui.TYPE.Container,
         template = I.MWUI.templates.box,
@@ -54,7 +55,7 @@ I.Settings.registerRenderer(info.name .. 'Button', function(value, set, argument
                     {
                         type = ui.TYPE.Text, 
                         template = I.MWUI.templates.textNormal,
-                        props = {autoSize = true, text = argument.text},
+                        props = {autoSize = true, text = L(argument.text)},
                         events = {
                             mouseClick = async:callback(function(mouseEvent, data)
                                 set(value + 1)

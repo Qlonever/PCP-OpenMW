@@ -485,7 +485,8 @@ I.Settings.registerGroup {
             description = 'ClearDataDesc',
             default = 0,
             argument = {
-                text = 'Clear Data'
+                l10n = info.name,
+                text = 'ClearDataButton'
             }
         }
     }

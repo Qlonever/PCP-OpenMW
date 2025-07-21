@@ -103,6 +103,7 @@ SettingsDataName: "Data Settings"
 
 ClearDataName: "Clear Data"
 ClearDataDesc: "Clicking this button will reset the data used to track character progression, making it as if this mod had just been added to the save file. This should only be used in niche cases, like redoing character creation in an existing save."
+ClearDataButton: "Clear Data"
 
 # Debug settings
 
