@@ -1,2 +1,2 @@
-PLAYER: scripts/potentialcharacterprogression/player.lua
-MENU: scripts/potentialcharacterprogression/renderer.lua
+PLAYER: scripts/potentialcharacterprogression/p_main.lua
+MENU: scripts/potentialcharacterprogression/m_renderer.lua
