@@ -19,9 +19,9 @@ local types = require('openmw.types')
 local ui = require('openmw.ui')
 local util = require('openmw.util')
 
-local mwData = require('scripts.' .. info.name .. '.mwdata')
-local PCPui = require('scripts.' .. info.name .. '.ui')
-local settings = require('scripts.' .. info.name .. '.settings')
+local mwData = require('scripts.' .. info.name .. '.p_mwdata')
+local PCPui = require('scripts.' .. info.name .. '.p_ui')
+local settings = require('scripts.' .. info.name .. '.p_settings')
 
 local function contains(t, element)
   for _, value in pairs(t) do

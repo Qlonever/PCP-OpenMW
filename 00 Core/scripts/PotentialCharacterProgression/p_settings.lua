@@ -7,7 +7,7 @@ local self = require('openmw.self')
 local storage = require('openmw.storage')
 
 local info = require('scripts.PotentialCharacterProgression.info')
-local mwData = require('scripts.' .. info.name .. '.mwdata')
+local mwData = require('scripts.' .. info.name .. '.p_mwdata')
 
 local function sortAlphabetical(a, b)
     return a:lower() < b:lower()
