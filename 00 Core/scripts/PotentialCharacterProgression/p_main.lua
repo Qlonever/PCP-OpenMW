@@ -430,6 +430,7 @@ end
 
 return {
     engineHandlers = {
+        onFrame = PCPui.processButtonAction,
         onUpdate = onUpdate,
         onKeyPress = onKeyPress,
         onLoad = onLoad,

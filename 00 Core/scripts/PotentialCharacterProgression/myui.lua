@@ -269,9 +269,32 @@ local textColors = {
     count = configColor('count')
 }
 
+local queuedButton = nil
+local buttonCooldown = nil
+
+-- Processes one button press at a time with a cooldown
+local function processButtonAction(dt)
+    if queuedButton then
+        queuedButton.buttonFunction(table.unpack(queuedButton.args))
+        queuedButton = nil
+    elseif buttonCooldown then
+        buttonCooldown = buttonCooldown - 1
+        if buttonCooldown <= 0 then
+            buttonCooldown = nil
+        end
+    end
+end
+
+local function queueButtonAction(buttonData, cooldown)
+    if not buttonCooldown then
+        queuedButton = buttonData
+        buttonCooldown = cooldown
+    end
+end
+
 -- Shared code for making button layouts
--- TODO: Make this unable to be pressed multiple times per frame
 local function createButton(parent, layout, updateColor, buttonFunction, args)
+    args = args or {}
     layout.events = { 
         mousePress = async:callback(function(mouseEvent, data)
             if mouseEvent.button == 1 then
@@ -283,7 +306,7 @@ local function createButton(parent, layout, updateColor, buttonFunction, args)
         mouseRelease = async:callback(function(mouseEvent, data)
             if mouseEvent.button == 1 then
                 updateColor(layout, 'over')
-                buttonFunction(table.unpack(args or {}))
+                queueButtonAction({buttonFunction = buttonFunction, args = args}, 2)
                 parent:update()
             end
         end),
@@ -476,5 +499,6 @@ return {
     createTextButton = createTextButton,
     createImageButton = createImageButton,
     disableWidget = disableWidget,
-    enableWidget = enableWidget
+    enableWidget = enableWidget,
+    processButtonAction = processButtonAction
 }

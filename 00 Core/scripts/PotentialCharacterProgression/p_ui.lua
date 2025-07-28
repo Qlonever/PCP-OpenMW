@@ -88,7 +88,6 @@ end
 
 local uiAttributes = {}
 local uiExperience = 0
-local uiConfirmed = true
 local uiDistributed = false
 
 -- Menu elements
@@ -533,7 +532,6 @@ local function modifyAttributeRow(attributeId, isOrigin)
 end
 
 -- Increment/decrement button functions
---local function modUiAttribute(data)
 local function modUiAttribute(attributeId, value)
     local prevExperience = uiExperience
     attribute = uiAttributes[attributeId]
@@ -615,9 +613,6 @@ end
 
 -- Close the menu, forwarding changes to the main script
 local function confirmMenu()
-    -- Prevents duplicate confirm events if the player clicks very fast
-    if uiConfirmed then return end
-    uiConfirmed = true
     self:sendEvent(info.name .. 'FinishMenu', {uiAttributes = uiAttributes, uiExperience = uiExperience, debugMode = debugMode})
 end
 
@@ -934,7 +929,7 @@ local function createMenu(levelUpData)
     levelInfoFlex.content.textFlex.content.value.props.text = tostring(Player.stats.level(self).current)
     
     -- Show level-up art and text if player has leveled up
-    if #levelUpData > 0 then
+    if levelUpData.level then
         menuLayout.content.padding.content.mainFlex.content.interactiveFlex.content[3] = {}
         levelUpLayout.content.levelFlex.content.ascendText.props.text = gameSettings.ascendText .. levelUpData.level
         local levelUpText = core.getGMST('Level_Up_Level' .. levelUpData.level)
@@ -963,5 +958,6 @@ end
 
 return {
     createMenu = createMenu,
-    hideMenu = hideMenu
+    hideMenu = hideMenu,
+    processButtonAction = myui.processButtonAction
 }
