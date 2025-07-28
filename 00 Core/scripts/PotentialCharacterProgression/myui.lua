@@ -312,13 +312,13 @@ local function createImageButton(parent, name, properties, buttonFunction, args)
         props = properties,
         userData = {}
     }
-
+    
     local button = createButton(parent, buttonLayout, 
     function(layout, state)
         layout.props.color = buttonColors[state]
     end, 
     buttonFunction, args)
-
+    
     return button
 end
 
@@ -367,13 +367,13 @@ local function createTextButton(parent, buttonText, color, name, properties, but
             }
         }
     }
-
+    
     local button = createButton(parent, buttonLayout, 
     function(layout, state)
         layout.content.vFlex.content.hFlex.content.text.props.textColor = buttonColors[state]
     end, 
     buttonFunction, args)
-
+    
     return button
 end
 ]]--
@@ -430,13 +430,13 @@ local function createTextButton(parent, buttonText, color, name, properties, siz
             }
         }
     }
-
+    
     local button = createButton(parent, buttonLayout, 
     function(layout, state)
         layout.content.vFlex.content.hFlex.content.text.props.textColor = buttonColors[state]
     end, 
     buttonFunction, args)
-
+    
     return button
 end
 

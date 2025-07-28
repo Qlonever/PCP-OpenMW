@@ -7,13 +7,12 @@ local self = require('openmw.self')
 local storage = require('openmw.storage')
 
 local info = require('scripts.PotentialCharacterProgression.info')
-local mwData = require('scripts.' .. info.name .. '.p_mwdata')
 
 local function sortAlphabetical(a, b)
     return a:lower() < b:lower()
 end
 
-local function capital(text)
+local function C(text)
     return text:gsub('^%l', string.upper)
 end
 
@@ -58,50 +57,6 @@ I.Settings.registerPage {
     name = 'PageName'
 }
 
--- Something stupid to get around I.Settings.updateRendererArgument() replacing the entire table
-local dependentArguments = {
-    basic = {
-        SharedAttributeCap = {
-            integer = true,
-            min = 0
-        },
-        FavoredAttributeCap = {
-            integer = true,
-            min = 0
-        },
-        UnfavoredAttributeCap = {
-            integer = true,
-            min = 0
-        },
-        UniqueAttributeCapValues = {
-            integer = true,
-            min = 0,
-            max = nil
-        }
-    },
-    health = {
-        RetroactiveStartHealth = {},
-        GradualRetroactiveHealth = {},
-        GradualRetroactiveHealthIncrement = {
-            integer = true,
-            min = 1,
-            max = nil
-        },
-        CustomHealthCoefficients = {
-            l10n = info.name,
-            integer = false,
-            min = nil,
-            max = nil
-        },
-        CustomGainMultiplier = {
-            integer = false,
-            min = 0,
-            max = nil
-        }
-    },
-    skill = {}
-}
-
 -- Dependent settings must belong to the same section as the settings they depend on
 local dependentSettings = {
     basic = {
@@ -120,16 +75,10 @@ local dependentSettings = {
     skill = {}
 }
 
--- Basic settings
+-- Settings tables
 
-I.Settings.registerGroup {
-    key = 'SettingsPlayer' .. info.name .. 'Basic',
-    page = 'Page' .. info.name,
-    order = 1,
-    l10n = info.name,
-    name = 'SettingsBasicName',
-    permanentStorage = true,
-    settings = {
+local settingsTables = {
+    basic = {
         {
             key = 'MenuKey',
             renderer = info.name .. 'KeyBind',
@@ -159,21 +108,30 @@ I.Settings.registerGroup {
             renderer = 'number',
             name = 'SharedAttributeCapName',
             default = 100,
-            argument = dependentArguments.basic.SharedAttributeCap
+            argument = {
+                integer = true,
+                min = 0
+            }
         },
         {
             key = 'FavoredAttributeCap',
             renderer = 'number',
             name = 'FavoredAttributeCapName',
             default = 100,
-            argument = dependentArguments.basic.FavoredAttributeCap
+            argument = {
+                integer = true,
+                min = 0
+            }
         },
         {
             key = 'UnfavoredAttributeCap',
             renderer = 'number',
             name = 'UnfavoredAttributeCapName',
             default = 100,
-            argument = dependentArguments.basic.UnfavoredAttributeCap
+            argument = {
+                integer = true,
+                min = 0
+            }
         },
         {
             key = 'UniqueAttributeCapValues',
@@ -191,22 +149,13 @@ I.Settings.registerGroup {
                     luck = 100
                 }, 
                 100),
-            argument = dependentArguments.basic.UniqueAttributeCapValues
+            argument = {
+                integer = true,
+                min = 0
+            }
         }
-    }
-}
-
--- Health settings
-
-I.Settings.registerGroup {
-    key = 'SettingsPlayer' .. info.name .. 'Health',
-    page = 'Page' .. info.name,
-    order = 2,
-    l10n = info.name,
-    name = 'SettingsHealthName',
-    description = 'SettingsHealthDesc',
-    permanentStorage = true,
-    settings = {
+    },
+    health = {
         {
             key = 'RetroactiveHealth',
             renderer = 'checkbox',
@@ -220,7 +169,7 @@ I.Settings.registerGroup {
             name = 'RetroactiveStartHealthName',
             description = 'RetroactiveStartHealthDesc',
             default = false,
-            argument = dependentArguments.health.RetroactiveStartHealth
+            argument = {}
         },
         {
             key = 'GradualRetroactiveHealth',
@@ -228,7 +177,7 @@ I.Settings.registerGroup {
             name = 'GradualRetroactiveHealthName',
             description = 'GradualRetroactiveHealthDesc',
             default = false,
-            argument = dependentArguments.health.GradualRetroactiveHealth
+            argument = {}
         },
         {
             key = 'GradualRetroactiveHealthIncrement',
@@ -236,7 +185,10 @@ I.Settings.registerGroup {
             name = 'GradualRetroactiveHealthIncrementName',
             description = 'GradualRetroactiveHealthIncrementDesc',
             default = 5,
-            argument = dependentArguments.health.GradualRetroactiveHealthIncrement
+            argument = {
+                integer = true,
+                min = 1
+            }
         },
         {
             key = 'CustomHealth',
@@ -262,7 +214,10 @@ I.Settings.registerGroup {
                     luck = 0
                 }, 
                 0),
-            argument = dependentArguments.health.CustomHealthCoefficients
+            argument = {
+                l10n = info.name,
+                integer = false
+            }
         },
         {
             key = 'CustomGainMultiplier',
@@ -270,22 +225,13 @@ I.Settings.registerGroup {
             name = 'CustomGainMultiplierName',
             description = 'CustomGainMultiplierDesc',
             default = 0.1,
-            argument = dependentArguments.health.CustomGainMultiplier
+            argument = {
+                integer = false,
+                min = 0
+            }
         }
-    }
-}
-
--- Balance settings
-
-I.Settings.registerGroup {
-    key = 'SettingsPlayer' .. info.name .. 'Balance',
-    page = 'Page' .. info.name,
-    order = 3,
-    l10n = info.name,
-    name = 'SettingsBalanceName',
-    description = 'SettingsBalanceDesc',
-    permanentStorage = true,
-    settings = {
+    },
+    balance = {
         {
             key = 'PotentialPerSkill',
             renderer = 'number',
@@ -393,20 +339,41 @@ I.Settings.registerGroup {
                 min = 0
             }
         }
+    },
+    skill = {
+        {
+            key = 'CustomSkillAttributes',
+            renderer = 'checkbox',
+            name = 'CustomSkillAttributesName',
+            description = 'CustomSkillAttributesDesc',
+            default = false
+        }
+    },
+    data = {
+        {
+            key = 'ClearData',
+            renderer = info.name .. 'Button',
+            name = 'ClearDataName',
+            description = 'ClearDataDesc',
+            default = 0,
+            argument = {
+                l10n = info.name,
+                text = 'ClearDataButton'
+            }
+        }
+    },
+    debug = {
+        {
+            key = 'DebugMode',
+            renderer = 'checkbox',
+            name = 'DebugModeName',
+            description = 'DebugModeDesc',
+            default = false
+        }
     }
 }
 
 -- Skill settings
-
-local skillSettings = {
-    {
-        key = 'CustomSkillAttributes',
-        renderer = 'checkbox',
-        name = 'CustomSkillAttributesName',
-        description = 'CustomSkillAttributesDesc',
-        default = false
-    }
-}
 
 local skillDefaults = {
     acrobatics  = {strength = 3, intelligence = 0, willpower = 0, agility = 1, speed = 2, endurance = 1, personality = 0, luck = 1},
@@ -447,16 +414,53 @@ end
 table.sort(skillList, sortAlphabetical)
 
 for i, skillId in ipairs(skillList) do
-    dependentArguments.skill[capital(skillId) .. 'Attributes'] = {l10n = info.name, integer = false, min = 0, max = nil}
-    dependentSettings.skill[capital(skillId) .. 'Attributes'] = {CustomSkillAttributes = true}
-    table.insert(skillSettings, {
-        key = capital(skillId) .. 'Attributes',
+    dependentSettings.skill[C(skillId) .. 'Attributes'] = {CustomSkillAttributes = true}
+    table.insert(settingsTables.skill, {
+        key = C(skillId) .. 'Attributes',
         renderer = info.name .. 'SkillAttributes',
         name = core.stats.Skill.record(skillId).name .. '  ',
         default = populateAttributes(skillDefaults[skillId] or {}, 0),
-        argument = dependentArguments.skill[capital(skillId) .. 'Attributes']
+        argument = {
+            l10n = info.name,
+            integer = false,
+            min = 0
+        }
     })
 end
+
+-- Settings groups
+
+I.Settings.registerGroup {
+    key = 'SettingsPlayer' .. info.name .. 'Basic',
+    page = 'Page' .. info.name,
+    order = 1,
+    l10n = info.name,
+    name = 'SettingsBasicName',
+    permanentStorage = true,
+    settings = settingsTables.basic
+}
+
+I.Settings.registerGroup {
+    key = 'SettingsPlayer' .. info.name .. 'Health',
+    page = 'Page' .. info.name,
+    order = 2,
+    l10n = info.name,
+    name = 'SettingsHealthName',
+    description = 'SettingsHealthDesc',
+    permanentStorage = true,
+    settings = settingsTables.health
+}
+
+I.Settings.registerGroup {
+    key = 'SettingsPlayer' .. info.name .. 'Balance',
+    page = 'Page' .. info.name,
+    order = 3,
+    l10n = info.name,
+    name = 'SettingsBalanceName',
+    description = 'SettingsBalanceDesc',
+    permanentStorage = true,
+    settings = settingsTables.balance
+}
 
 I.Settings.registerGroup {
     key = 'SettingsPlayer' .. info.name .. 'Skill',
@@ -465,10 +469,8 @@ I.Settings.registerGroup {
     l10n = info.name,
     name = 'SettingsSkillName',
     permanentStorage = true,
-    settings = skillSettings
+    settings = settingsTables.skill
 }
-
--- Data settings
 
 I.Settings.registerGroup {
     key = 'SettingsPlayer' .. info.name .. 'Data',
@@ -477,22 +479,8 @@ I.Settings.registerGroup {
     l10n = info.name,
     name = 'SettingsDataName',
     permanentStorage = true,
-    settings = {
-        {
-            key = 'ClearData',
-            renderer = info.name .. 'Button',
-            name = 'ClearDataName',
-            description = 'ClearDataDesc',
-            default = 0,
-            argument = {
-                l10n = info.name,
-                text = 'ClearDataButton'
-            }
-        }
-    }
+    settings = settingsTables.data
 }
-
--- Debug settings
 
 I.Settings.registerGroup {
     key = 'SettingsPlayer' .. info.name .. 'Debug',
@@ -501,15 +489,7 @@ I.Settings.registerGroup {
     l10n = info.name,
     name = 'SettingsDebugName',
     permanentStorage = true,
-    settings = {
-        {
-            key = 'DebugMode',
-            renderer = 'checkbox',
-            name = 'DebugModeName',
-            description = 'DebugModeDesc',
-            default = false
-        }
-    }
+    settings = settingsTables.debug
 }
 
 -- Dependent Settings
@@ -540,8 +520,14 @@ local function dependentFunction(sectionKey, changedKey)
                     disabled = true
                 end
             end
-            local argument = dependentArguments[groupName][dependentKey]
-            argument.disabled = disabled
+            local argument = {}
+            for _, setting in pairs(settingsTables[groupName]) do
+                if setting.key == dependentKey then
+                    argument = setting.argument
+                    argument.disabled = disabled
+                    break
+                end
+            end
             I.Settings.updateRendererArgument(sectionKey, dependentKey, argument)
         end
     end
@@ -551,7 +537,7 @@ local dependentCallback = async:callback(dependentFunction)
 
 -- Initialize disabled state of dependent settings
 for groupName, dependedKeys in pairs(dependedSettings) do
-    local sectionKey = 'SettingsPlayer' .. info.name .. capital(groupName) 
+    local sectionKey = 'SettingsPlayer' .. info.name .. C(groupName) 
     for dependedKey, _ in pairs(dependedKeys) do
         dependentFunction(sectionKey, dependedKey)
     end

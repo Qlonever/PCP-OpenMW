@@ -43,3 +43,6 @@
 ## 1.1.1
 - Fixed a bug preventing skills from increasing when Custom Skill Caps is installed
 - Fixed "Clear Data" button text not being in localization files
+
+## Next
+- Fixed settings changes not updating health immediately

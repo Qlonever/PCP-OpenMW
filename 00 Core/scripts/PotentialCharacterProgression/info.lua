@@ -8,5 +8,7 @@ return {
     version = '1.1.1',
     saveVersion = 1,
     settingsVersion = 3,
+    interfaceName = 'PCP',
+    interfaceVersion = 1,
     minApiVersion = 68
 }

@@ -52,7 +52,7 @@ local classData = {
         sneak       = 'MS',
         speechcraft = 'mS'
     },
-
+    
     agent = {
         block       = 'm',
         conjuration = 'm',
@@ -68,7 +68,7 @@ local classData = {
         sneak       = 'MS',
         speechcraft = 'MS'
     },
-
+    
     archer = {
         armorer     = 'S',
         athletics   = 'MS',
@@ -85,7 +85,7 @@ local classData = {
         marksman    = 'M',
         sneak       = 'm'
     },
-
+    
     assassin = {
         athletics   = 'm',
         block       = 'm',
@@ -101,7 +101,7 @@ local classData = {
         sneak       = 'MS',
         speechcraft = 'S'
     },
-
+    
     barbarian = {
         armorer     = 'mS',
         athletics   = 'MS',
@@ -117,7 +117,7 @@ local classData = {
         lightarmor  = 'm',
         marksman    = 'm'
     },
-
+    
     bard = {
         block       = 'M',
         longblade   = 'M',
@@ -135,7 +135,7 @@ local classData = {
         sneak       = 'S',
         speechcraft = 'MS'
     },
-
+    
     battlemage = {
         axe         = 'M',
         heavyarmor  = 'M',
@@ -151,7 +151,7 @@ local classData = {
         unarmored   = 'S',
         marksman    = 'm'
     },
-
+    
     crusader = {
         armorer     = 'mS',
         athletics   = 'S',
@@ -167,7 +167,7 @@ local classData = {
         restoration = 'm',
         handtohand  = 'm'
     },
-
+    
     healer = {
         bluntweapon = 'm',
         alchemy     = 'mS',
@@ -183,7 +183,7 @@ local classData = {
         lightarmor  = 'm',
         speechcraft = 'M'
     },
-
+    
     knight = {
         armorer     = 'mS',
         athletics   = 'S',
@@ -199,7 +199,7 @@ local classData = {
         mercantile  = 'm',
         speechcraft = 'M'
     },
-
+    
     mage = {
         alchemy     = 'mS',
         alteration  = 'MS',
@@ -212,7 +212,7 @@ local classData = {
         unarmored   = 'mS',
         shortblade  = 'm'
     },
-
+    
     monk = {
         athletics   = 'M',
         block       = 'm',
@@ -229,7 +229,7 @@ local classData = {
         sneak       = 'MS',
         speechcraft = 'S'
     },
-
+    
     nightblade = {
         alchemy     = 'S',
         alteration  = 'MS',
@@ -246,7 +246,7 @@ local classData = {
         shortblade  = 'M',
         sneak       = 'M'
     },
-
+    
     pilgrim = {
         block       = 'm',
         mediumarmor = 'M',
@@ -263,7 +263,7 @@ local classData = {
         sneak       = 'S',
         speechcraft = 'MS'
     },
-
+    
     rogue = {
         armorer     = 'S',
         athletics   = 'mS',
@@ -280,7 +280,7 @@ local classData = {
         shortblade  = 'M',
         speechcraft = 'm'
     },
-
+    
     scout = {
         armorer     = 'S',
         athletics   = 'MS',
@@ -298,7 +298,7 @@ local classData = {
         marksman    = 'm',
         sneak       = 'M'
     },
-
+    
     sorcerer = {
         heavyarmor  = 'm',
         mediumarmor = 'm',
@@ -314,7 +314,7 @@ local classData = {
         marksman    = 'm',
         shortblade  = 'm'
     },
-
+    
     spellsword = {
         axe         = 'm',
         block       = 'M',
@@ -331,7 +331,7 @@ local classData = {
         restoration = 'MS',
         unarmored   = 'S'
     },
-
+    
     thief = {
         athletics   = 'm',
         acrobatics  = 'MS',
@@ -344,7 +344,7 @@ local classData = {
         sneak       = 'MS',
         speechcraft = 'mS'
     },
-
+    
     warrior = {
         armorer     = 'mS',
         athletics   = 'MS',
@@ -357,7 +357,7 @@ local classData = {
         spear       = 'mS',
         marksman    = 'm'
     },
-
+    
     witchhunter = {
         block       = 'm',
         bluntweapon = 'm',

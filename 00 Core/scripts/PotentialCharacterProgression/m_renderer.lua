@@ -14,7 +14,7 @@ local myui = require('scripts.' .. info.name .. '.myui')
 
 local v2 = util.vector2
 
-local function capital(text)
+local function C(text)
     return text:gsub('^%l', string.upper)
 end
 
@@ -247,7 +247,7 @@ local function createCoefficientField(value, set, argument, attributeId, first)
             {
                 type = ui.TYPE.Text,
                 template = I.MWUI.templates.textNormal,
-                props = {text = L(capital(attributeId) .. 'Abbreviation'), textAlignH = ui.ALIGNMENT.Center, autoSize = false, size = v2(40, 16)}
+                props = {text = L(C(attributeId) .. 'Abbreviation'), textAlignH = ui.ALIGNMENT.Center, autoSize = false, size = v2(40, 16)}
             },
             {
                 type = ui.TYPE.Text,
@@ -298,7 +298,7 @@ I.Settings.registerRenderer(info.name .. 'SkillAttributes', function(value, set,
         rendererLayout.content.abbreviationsFlex.content:add{
             type = ui.TYPE.Text,
             template = I.MWUI.templates.textNormal,
-            props = {text = L(capital(attributeRecord.id) .. 'Abbreviation'), textAlignH = ui.ALIGNMENT.Center, autoSize = false, size = v2(48, 18)}
+            props = {text = L(C(attributeRecord.id) .. 'Abbreviation'), textAlignH = ui.ALIGNMENT.Center, autoSize = false, size = v2(48, 18)}
         }
         rendererLayout.content.fieldsFlex.content:add(createAttributeField(value, set, argument, attributeRecord.id, v2(40, 18)))
     end

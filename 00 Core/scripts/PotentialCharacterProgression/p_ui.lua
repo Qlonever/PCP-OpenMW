@@ -1,4 +1,4 @@
--- All code pertaining to this mod's level menu
+-- Functions and layouts for the potential menu
 local async = require('openmw.async')
 local core = require('openmw.core')
 local I = require('openmw.interfaces')
@@ -13,6 +13,8 @@ local Player = types.Player
 local info = require('scripts.PotentialCharacterProgression.info')
 local myui = require('scripts.' .. info.name .. '.myui')
 
+local IName = info.interfaceName
+
 local L = core.l10n(info.name)
 
 local v2 = util.vector2
@@ -26,11 +28,22 @@ local function contains(t, element)
   return false
 end
 
-local function capital(text)
+local function C(text)
     return text:gsub('^%l', string.upper)
 end
 
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+-- Game settings
+
+local gameSettings = {
+    ascendText = core.getGMST('sLevelUpMenu1'),
+    levelUpTextDefault = core.getGMST('Level_Up_Default'),
+    okayText = core.getGMST('sOK'),
+    levelText = core.getGMST('sLevel'),
+    levelProgressText = core.getGMST('sLevelProgress'),
+    skillUpsPerLevel = core.getGMST('iLevelupTotal')
+}
 
 -- Mod settings
 
@@ -47,15 +60,6 @@ local unfavoredAttributeCap
 local uniqueAttributeCaps
 local debugMode
 local expCostTable
-
--- Game settings
-
-local ascendText = core.getGMST('sLevelUpMenu1')
-local levelUpTextDefault = core.getGMST('Level_Up_Default')
-local okayText = core.getGMST('sOK')
-local levelText = core.getGMST('sLevel')
-local levelProgressText = core.getGMST('sLevelProgress')
-local skillUpsPerLevel = core.getGMST('iLevelupTotal')
 
 -- Data
 
@@ -201,7 +205,7 @@ local levelTooltipFlex = {
             name = 'text',
             type = ui.TYPE.Text,
             template = I.MWUI.templates.textNormal,
-            props = {text = levelProgressText, textColor = myui.textColors.positive}
+            props = {text = gameSettings.levelProgressText, textColor = myui.textColors.positive}
         }
     }
 }
@@ -280,14 +284,14 @@ local levelUpLayout = {
                     name = 'ascendText',
                     type = ui.TYPE.Text,
                     template = I.MWUI.templates.textNormal,
-                    props = {text = ascendText}
+                    props = {text = ''}
                 },
                 myui.padWidget(0,14),
                 {
                     name = 'levelUpText',
                     type = ui.TYPE.Text,
                     template = I.MWUI.templates.textNormal,
-                    props = {text = levelUpTextDefault, wordWrap = true, autoSize = false, size = v2(272, 128)}
+                    props = {text = '', wordWrap = true, autoSize = false, size = v2(272, 128)}
                 }
             }
         },
@@ -310,7 +314,7 @@ local levelInfoFlex = {
                     name = 'text',
                     type = ui.TYPE.Text,
                     template = I.MWUI.templates.textNormal,
-                    props = {text = levelText, textColor = myui.textColors.positive}
+                    props = {text = gameSettings.levelText, textColor = myui.textColors.positive}
                 },
                 myui.padWidget(8,0),
                 {
@@ -423,7 +427,7 @@ local function expCost(isFavored, isOver)
     if debugMode then
         return 0
     end
-
+    
     local favoredKey = 'notFavored'
     local overKey = 'notOver'
     if isFavored then
@@ -487,25 +491,25 @@ local function modifyAttributeRow(attributeId, isOrigin)
         end
         changed.num = true
         changed.exp = true
-
+        
         -- Color attribute potential, don't bother if debug mode is enabled or base is already above cap
         if not (debugMode or (attribute.cap > 0 and attribute.base > attribute.cap)) then
             local diff = math.floor(attribute.potential) - attribute.ups
-
+            
             local potentialColor = myui.interactiveTextColors.normal.default
             if diff < 0 then
                 potentialColor = myui.textColors.negative
             elseif diff >= 1 then
                 potentialColor = myui.interactiveTextColors.active.default
             end
-
+            
             if potentialColor ~= uiColumns.attributePotsInt.content[attributeId].content[attributeId].props.textColor then
                 uiColumns.attributePotsInt.content[attributeId].content[attributeId].props.textColor = potentialColor
                 uiColumns.attributePotsFrac.content[attributeId].content[attributeId].props.textColor = potentialColor
                 changed.pot = true
             end
         end
-
+        
         -- Enable/disable attribute decrement button
         if (attribute.base + attribute.ups <= 0 or (not debugMode and attribute.ups <= 0)) and not uiColumns.attributeDecs.layout.content[attributeId].content[attributeId].userData.isDisabled then
             myui.disableWidget(uiColumns.attributeDecs.layout.content[attributeId].content[attributeId])
@@ -515,7 +519,7 @@ local function modifyAttributeRow(attributeId, isOrigin)
             changed.dec = true
         end
     end
-
+    
     -- Enable/disable attribute increment button
     local cost = expCost(attribute.isFavored, attribute.ups + 1 > attribute.potential)
     if (cost > uiExperience or (attribute.cap > 0 and attribute.base + attribute.ups + 1 > attribute.cap)) and not uiColumns.attributeIncs.layout.content[attributeId].content[attributeId].userData.isDisabled then
@@ -644,26 +648,26 @@ local function sizeRow(layout, size)
 end
 
 -- UI creation function called from the main script
-local function createMenu(levelUpData, attributeData, experience)
-    uiExperience = experience
-
+local function createMenu(levelUpData)
+    uiExperience = I[IName].get('experience')
+    
     uiConfirmed = false
     uiDistributed = false
-
+    
     -- Can't read this when the script first loads if the player doesn't have a class yet
     -- Also accounts for the player changing their class mid-session with console commands
     playerClassRecord = Player.classes.record(Player.record(self).class)
-
+    
     -- Set these at menu creation so settings can update mid-session
-
+    
     attributeCapMethod = modSettings.basic:get('AttributeCapMethod')
     sharedAttributeCap = modSettings.basic:get('SharedAttributeCap')
     favoredAttributeCap = modSettings.basic:get('FavoredAttributeCap')
     unfavoredAttributeCap = modSettings.basic:get('UnfavoredAttributeCap')
     uniqueAttributeCaps = modSettings.basic:get('UniqueAttributeCapValues')
-
+    
     debugMode = modSettings.debug:get('DebugMode')
-
+    
     expCostTable = {
         notFavored = {
             notOver = modSettings.balance:get('ExperienceCost'),
@@ -674,11 +678,11 @@ local function createMenu(levelUpData, attributeData, experience)
             over = modSettings.balance:get('ExperienceCostFavoredOver')
         }
     }
-
+    
     uiAttributes = {}
-
+    
     -- Create the interactive parts of the UI
-
+    
     -- Create UI columns
     uiColumns = {
         attributeExp = ui.create{name = 'attributeExp', type = ui.TYPE.Flex, content = ui.content{myui.padWidget(44,0)}},
@@ -689,15 +693,15 @@ local function createMenu(levelUpData, attributeData, experience)
         attributePotsInt = {name = 'attributePotsInt', type = ui.TYPE.Flex, props = {arrange = ui.ALIGNMENT.End}, content = ui.content{}},
         attributePotsFrac = {name = 'attributePotsFrac', type = ui.TYPE.Flex, content = ui.content{}}
     }
-
+    
     -- Iterate over attributes to populate UI columns
     for i, attributeRecord in ipairs(core.stats.Attribute.records) do
         uiAttributes[attributeRecord.id] = {}
         local attributeId = attributeRecord.id
         local attribute = uiAttributes[attributeId]
-
+        
         attribute.isFavored = contains(playerClassRecord.attributes, attributeId)
-
+        
         if attributeCapMethod == 'SharedCap' then
             attribute.cap = sharedAttributeCap
         elseif attributeCapMethod == 'FavoredCap' then
@@ -711,15 +715,15 @@ local function createMenu(levelUpData, attributeData, experience)
         else
             attribute.cap = 100
         end
-
+        
         attribute.experience = 0
         attribute.base = Player.stats.attributes[attributeId](self).base
-        attribute.potential = attributeData[attributeRecord.id].potential
+        attribute.potential = I[IName].attributeGet(attributeId, 'potential')
         if attribute.cap > 0 then
             attribute.potential = math.min(attribute.potential, attribute.cap - attribute.base)
         end
         attribute.ups = 0
-
+        
         -- EXP spent indicator
         uiColumns.attributeExp.layout.content:add(sizeRow{
             name = attributeId,
@@ -739,13 +743,13 @@ local function createMenu(levelUpData, attributeData, experience)
                 }
             }
         })
-
+        
         -- Attribute name
         local nameLayout = {
             name = attributeId,
             type = ui.TYPE.Text,
             template = I.MWUI.templates.textNormal,
-            props = {text = core.getGMST('sAttribute' .. capital(attributeId))},
+            props = {text = core.getGMST('sAttribute' .. C(attributeId))},
             events = {
             focusGain = async:callback(function()
                 createAttributeTooltip(attributeId) 
@@ -762,15 +766,15 @@ local function createMenu(levelUpData, attributeData, experience)
             nameLayout.props.textColor = myui.textColors.positive
         end
         uiColumns.attributeNames.content:add{name = 'nameflex', type = ui.TYPE.Flex, props = {horizontal = true, arrange = ui.ALIGNMENT.Center}, content = ui.content { myui.padWidget(6,rowHeight), nameLayout, myui.padWidget(10,rowHeight)}}
-
+        
         -- Decrement button
         local decLayout = myui.createImageButton(uiColumns.attributeDecs, attributeId, {resource = resources.buttonDec, anchor = v2(0.5, 0.5), size = v2(32, 32)}, modUiAttribute, {attributeId, -1})
         uiColumns.attributeDecs.layout.content:add(sizeRow(decLayout, v2(10, 18)))
-
+        
         -- Increment button
         local incLayout = myui.createImageButton(uiColumns.attributeIncs, attributeId, {resource = resources.buttonInc, anchor = v2(0.5, 0.5), size = v2(32, 32)}, modUiAttribute, {attributeId, 1})
         uiColumns.attributeIncs.layout.content:add(sizeRow(incLayout, v2(10, 18)))
-
+        
         -- Attribute value
         local numLayout = {
             name = attributeId,
@@ -779,9 +783,9 @@ local function createMenu(levelUpData, attributeData, experience)
             props = {text = tostring(attribute.base)}
         }
         uiColumns.attributeNums.layout.content:add{name = attributeId, type = ui.TYPE.Flex, props = {horizontal = true, arrange = ui.ALIGNMENT.Center}, content = ui.content {myui.padWidget(4, rowHeight), numLayout, myui.padWidget(4, rowHeight)}}
-
+        
         local potString = tostring(attribute.potential + attribute.base)
-
+        
         -- Potential whole number, split to align at decimal point
         local potInt = potString:sub(potString:find('^%d+'))
         uiColumns.attributePotsInt.content:add(sizeRow{
@@ -790,7 +794,7 @@ local function createMenu(levelUpData, attributeData, experience)
             template = I.MWUI.templates.textNormal,
             props = {text = potInt}
         })
-
+        
         -- Potential decimal, split to align at decimal point
         local potFrac = potString:gsub('^%d+', ''):sub(1, 5)
         uiColumns.attributePotsFrac.content:add(sizeRow{
@@ -799,10 +803,10 @@ local function createMenu(levelUpData, attributeData, experience)
             template = I.MWUI.templates.textNormal,
             props = {text = potFrac, textColor = potentialColor}
         })
-
+        
         modifyAttributeRow(attributeId, true)
     end
-
+    
     -- Remaining EXP indicator
     expFlex = ui.create{
         name = 'expFlex',
@@ -847,7 +851,7 @@ local function createMenu(levelUpData, attributeData, experience)
             }
         }
     }
-
+    
     -- Visible coins equal to maxCoins, after which just display a number
     local coinCount = math.min(uiExperience, maxCoins)
     local offset = math.min(math.floor(120 / (coinCount - 1)), 16)
@@ -858,7 +862,7 @@ local function createMenu(levelUpData, attributeData, experience)
             props = {resource = resources.coin, size = v2(16, 16), position = v2((i-1) * offset, 0), alpha = 1}
         }
     end
-
+    
     -- All columns, except those pertaining to potential
     local attributeFlex = {
         name = 'attributeFlex',
@@ -881,7 +885,7 @@ local function createMenu(levelUpData, attributeData, experience)
             }
         }
     }
-
+    
     -- Column(s) pertaining to potential
     potentialFlex = ui.create{
         name = 'potentialFlex',
@@ -906,38 +910,38 @@ local function createMenu(levelUpData, attributeData, experience)
             }
         }
     }
-
+    
     -- Confirm and auto-distribute buttons
     confirmButton = ui.create{}
     autoButton = ui.create{}
     confirmButtonSize = v2(tonumber(L('ButtonConfirmSizeX')), tonumber(L('ButtonConfirmSizeY')))
     autoButtonSize = v2(tonumber(L('ButtonAutoSizeX')), tonumber(L('ButtonAutoSizeY')))
-    confirmButton.layout = myui.createTextButton(confirmButton, okayText, 'normal', 'confirmButton', {}, confirmButtonSize, confirmMenu)
+    confirmButton.layout = myui.createTextButton(confirmButton, gameSettings.okayText, 'normal', 'confirmButton', {}, confirmButtonSize, confirmMenu)
     autoButton.layout = myui.createTextButton(autoButton, L('MenuDistribute'), 'normal', 'autoButton', {}, autoButtonSize, autoDistribute)
     if debugMode then
         autoButton.layout.props.visible = false
     end
-
+    
     updateExperience(uiExperience)  
     updateAttributeRows{dec = true, num = true, inc = true, pot = true}
-
+    
     autoButton:update()
     confirmButton:update()
-
+    
     local progress = Player.stats.level(self).progress
-    levelInfoFlex.content.progressBar.content.progress.props.text = progress .. '/' .. skillUpsPerLevel
-    levelInfoFlex.content.progressBar.content.color.props.size = v2(130 * math.min(progress / skillUpsPerLevel, 1), 16)
+    levelInfoFlex.content.progressBar.content.progress.props.text = progress .. '/' .. gameSettings.skillUpsPerLevel
+    levelInfoFlex.content.progressBar.content.color.props.size = v2(130 * math.min(progress / gameSettings.skillUpsPerLevel, 1), 16)
     levelInfoFlex.content.textFlex.content.value.props.text = tostring(Player.stats.level(self).current)
-
+    
     -- Show level-up art and text if player has leveled up
-    if levelUpData then
+    if #levelUpData > 0 then
         menuLayout.content.padding.content.mainFlex.content.interactiveFlex.content[3] = {}
-        levelUpLayout.content.levelFlex.content.ascendText.props.text = ascendText .. levelUpData.level
+        levelUpLayout.content.levelFlex.content.ascendText.props.text = gameSettings.ascendText .. levelUpData.level
         local levelUpText = core.getGMST('Level_Up_Level' .. levelUpData.level)
         if levelUpText ~= nil then
             levelUpLayout.content.levelFlex.content.levelUpText.props.text = levelUpText
         else
-            levelUpLayout.content.levelFlex.content.levelUpText.props.text = levelUpTextDefault
+            levelUpLayout.content.levelFlex.content.levelUpText.props.text = gameSettings.levelUpTextDefault
         end
         resources.classArt = ui.texture{path = 'textures/levelup/' .. levelUpData.class .. '.dds'}
         levelUpArt.props.resource = resources.classArt
@@ -946,13 +950,13 @@ local function createMenu(levelUpData, attributeData, experience)
         menuLayout.content.padding.content.mainFlex.content.interactiveFlex.content[3] = levelInfoFlex
         menuLayout.content.padding.content.mainFlex.content[1] = {}
     end
-
+    
     rowsFlex.content = ui.content {attributeFlex, potentialFlex}
     actionsFlex.content = ui.content {autoButton, myui.padWidget(4, 0), confirmButton}
-
+    
     -- Create the menu
     menu = ui.create(menuLayout)
-
+    
     -- Create the attribute tooltip
     tooltip = ui.create(tooltipLayout)
 end
