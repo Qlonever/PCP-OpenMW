@@ -58,39 +58,6 @@ local function getPlayerRecords()
     }
 end
 
--- Mod compatibility -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-
--- Custom Skill Caps
-
-local CSCSettings = {}
-
-if core.contentFiles.indexOf('CustomSkillCaps.omwscripts') ~= nil then
-    CSCSettings.basic = storage.playerSection('SettingsPlayerCustomSkillCapsBasic')
-end
-
--- Get maximum value for skill depending on settings
-local function getSkillCap(skillId)
-    if CSCSettings.basic ~= nil then
-        capMethod = CSCSettings.basic:get('SkillCapMethod')
-        if capMethod == 'SharedCap' then
-            return CSCSettings.basic:get('SharedSkillCap')
-        elseif capMethod == 'ClassCap' then
-            local playerRecords = getPlayerRecords()
-            if contains(playerRecords.class.majorSkills, skillId) then
-                return CSCSettings.basic:get('MajorSkillCap')
-            elseif contains(playerRecords.class.minorSkills, skillId) then
-                return CSCSettings.basic:get('MinorSkillCap')
-            else
-                return CSCSettings.basic:get('MiscSkillCap')
-            end
-        elseif capMethod == 'UniqueCap' then
-            return CSCSettings.basic:get(C(skillId) .. 'Cap')
-        end
-    else
-        return 100
-    end
-end
-
 
 
 
@@ -313,7 +280,10 @@ local function handleskillUps(skillId, source, options)
         -- Also account for built-in handlers fraudulently triggering skillLevelUps
         local skillBase = playerSkills[skillId](self).base
         local skillNewBase = options.skillIncreaseValue + skillBase
-        local skillCap = getSkillCap(skillId)
+        local skillCap = 100
+        if I.CSC then
+            skillCap = I.CSC.getSkillCap(skillId)
+        end
         if skillCap > 0 then
             skillNewBase = math.min(skillNewBase, skillCap)
         end
